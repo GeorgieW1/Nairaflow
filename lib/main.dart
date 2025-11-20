@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:nairaflow/theme.dart';
 import 'package:nairaflow/utils/router.dart';
 import 'package:nairaflow/services/api_service.dart';
+import 'package:nairaflow/services/paystack_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +19,9 @@ void main() async {
   
   // Initialize API service
   ApiService.initialize();
+  
+  // Initialize Paystack
+  await PaystackService.initialize();
   
   runApp(const ProviderScope(child: MyApp()));
 }

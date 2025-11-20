@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "705772017757",
+    "project_id": "nairapay-49220",
+    "storage_bucket": "nairapay-49220.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:705772017757:android:2ee6eae272ead5758b55b4",
+        "android_client_info": {
+          "package_name": "com.example.nairaflow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "705772017757-3f1rkv648fnk66fqua1glop0fqbq3efi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLWHwOLu03nqeBT1jH5-MOohznmpDelmc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "705772017757-3f1rkv648fnk66fqua1glop0fqbq3efi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

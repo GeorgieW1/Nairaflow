@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nairaflow/models/transaction.dart';
+import 'package:nairaflow/screens/transactions/transaction_receipt_screen.dart';
 
 class TransactionItem extends StatelessWidget {
   final Transaction transaction;
@@ -13,7 +14,18 @@ class TransactionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPositive = transaction.type == TransactionType.funding;
     
-    return Container(
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => TransactionReceiptScreen(
+              transaction: transaction,
+            ),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -98,6 +110,7 @@ class TransactionItem extends StatelessWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }

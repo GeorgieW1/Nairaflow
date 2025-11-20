@@ -53,6 +53,7 @@ class TransactionService {
     required NetworkProvider network,
     required double amount,
     required String dataPackage,
+    String? variationCode,  // ← NEW: The critical variation_code!
   }) async {
     try {
       final requestData = {
@@ -60,9 +61,14 @@ class TransactionService {
         'network': network.name.toUpperCase(),
         'dataPlan': dataPackage,
         'amount': amount,
+        if (variationCode != null) 'variationCode': variationCode,  // ← Send to backend!
       };
 
+      print('📤 Purchasing data with: $requestData'); // Debug log
+
       final response = await ApiService.buyData(requestData);
+      
+      print('📥 Data purchase response: ${response.data}'); // Debug log
       
       if (response.data['success'] == true) {
         final transactionData = response.data['transaction'] as Map<String, dynamic>;
@@ -83,13 +89,20 @@ class TransactionService {
 
         return transaction;
       } else {
-        throw Exception(response.data['message'] ?? 'Purchase failed');
+        final errorMsg = response.data['message'] ?? 'Purchase failed';
+        print('❌ Data purchase failed: $errorMsg'); // Debug log
+        throw Exception(errorMsg);
       }
     } catch (e) {
+      print('❌ Data purchase error: $e'); // Debug log
       if (e.toString().contains('DioException')) {
-        throw Exception('Data purchase failed: Unable to connect to server');
+        throw Exception('Unable to connect to server');
       }
-      throw Exception('Data purchase failed: ${e.toString()}');
+      // Clean up error message
+      final errorMsg = e.toString()
+          .replaceFirst('Exception: ', '')
+          .replaceFirst('Data purchase failed: ', '');
+      throw Exception(errorMsg);
     }
   }
 
@@ -183,6 +196,13 @@ class TransactionService {
   // Get transaction history
   static Future<List<Transaction>> getTransactionHistory() async {
     try {
+      // Check if user has a token before making API call
+      final token = await StorageService.getSecure('jwt_token');
+      if (token == null) {
+        // No token, return cached transactions or empty list
+        return await _getLocalTransactions();
+      }
+      
       final response = await ApiService.getTransactions(limit: 100);
       final userId = await _getCurrentUserId();
       

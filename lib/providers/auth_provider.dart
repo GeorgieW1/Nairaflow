@@ -18,11 +18,13 @@ class AuthState {
     User? user,
     bool? isLoading,
     String? error,
+    bool setUserNull = false,
+    bool setErrorNull = false,
   }) {
     return AuthState(
-      user: user ?? this.user,
+      user: setUserNull ? null : (user ?? this.user),
       isLoading: isLoading ?? this.isLoading,
-      error: error,
+      error: setErrorNull ? null : (error ?? this.error),
     );
   }
 
@@ -39,19 +41,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true);
     try {
       final user = await AuthService.getCurrentUser();
-      state = state.copyWith(user: user, isLoading: false, error: null);
+      state = state.copyWith(user: user, isLoading: false, setErrorNull: true);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   Future<void> loginWithEmailPassword(String email, String password) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, setErrorNull: true);
     try {
       final user = await AuthService.loginWithEmailPassword(email, password);
-      state = state.copyWith(user: user, isLoading: false, error: null);
+      state = state.copyWith(user: user, isLoading: false, setErrorNull: true);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      // Clean up error message (remove "Exception: " prefix)
+      String errorMessage = e.toString().replaceFirst('Exception: ', '');
+      state = state.copyWith(isLoading: false, error: errorMessage);
     }
   }
 
@@ -61,7 +65,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     required String phone,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, setErrorNull: true);
     try {
       final user = await AuthService.registerWithEmailPassword(
         name: name,
@@ -69,18 +73,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
         password: password,
         phone: phone,
       );
-      state = state.copyWith(user: user, isLoading: false, error: null);
+      state = state.copyWith(user: user, isLoading: false, setErrorNull: true);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      // Clean up error message (remove "Exception: " prefix)
+      String errorMessage = e.toString().replaceFirst('Exception: ', '');
+      state = state.copyWith(isLoading: false, error: errorMessage);
     }
   }
 
   Future<void> signInWithGoogle() async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, setErrorNull: true);
     try {
       final user = await AuthService.signInWithGoogle();
       if (user != null) {
-        state = state.copyWith(user: user, isLoading: false, error: null);
+        state = state.copyWith(user: user, isLoading: false, setErrorNull: true);
       } else {
         state = state.copyWith(isLoading: false, error: 'Google sign-in cancelled');
       }
@@ -90,12 +96,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
-    state = state.copyWith(isLoading: true);
+    // Set user to null IMMEDIATELY to stop any ongoing requests
+    // Don't set isLoading to prevent router redirect issues
+    state = state.copyWith(setUserNull: true, isLoading: false, setErrorNull: true);
     try {
       await AuthService.logout();
-      state = state.copyWith(user: null, isLoading: false, error: null);
+      // User already null, just ensure state is clean
+      state = state.copyWith(setUserNull: true, isLoading: false, setErrorNull: true);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      // Even if logout fails, keep user as null (already logged out from UI perspective)
+      state = state.copyWith(setUserNull: true, isLoading: false, error: e.toString());
     }
   }
 
@@ -103,7 +113,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final user = await AuthService.refreshUserData();
       if (user != null) {
-        state = state.copyWith(user: user, error: null);
+        state = state.copyWith(user: user, setErrorNull: true);
       }
     } catch (e) {
       state = state.copyWith(error: e.toString());
@@ -111,7 +121,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   void clearError() {
-    state = state.copyWith(error: null);
+    state = state.copyWith(setErrorNull: true);
   }
 }
 

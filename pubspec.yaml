@@ -19,6 +19,14 @@ dependencies:
   firebase_core: '>=2.21.1'
   firebase_auth: '>=5.3.3'
   google_sign_in: '>=6.2.1'
+  # ✔ HTTP client for API calls
+  http: ^1.1.2
+  # ✔ WebView for inline Paystack payment
+  webview_flutter: ^4.4.2
+  # ✔ Date formatting for receipts
+  intl: ^0.19.0
+  # ✔ Share receipts functionality
+  share_plus: ^7.2.2
 
 dev_dependencies:
   flutter_test:
@@ -28,6 +36,44 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/fonts/
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.woff2
+        - asset: assets/fonts/Inter-Italic.woff2
+          style: italic
+        - asset: assets/fonts/Inter-Thin.woff2
+          weight: 100
+        - asset: assets/fonts/Inter-ThinItalic.woff2
+          weight: 100
+          style: italic
+        - asset: assets/fonts/Inter-Light.woff2
+          weight: 300
+        - asset: assets/fonts/Inter-LightItalic.woff2
+          weight: 300
+          style: italic
+        - asset: assets/fonts/Inter-Medium.woff2
+          weight: 500
+        - asset: assets/fonts/Inter-MediumItalic.woff2
+          weight: 500
+          style: italic
+        - asset: assets/fonts/Inter-SemiBold.woff2
+          weight: 600
+        - asset: assets/fonts/Inter-SemiBoldItalic.woff2
+          weight: 600
+          style: italic
+        - asset: assets/fonts/Inter-Bold.woff2
+          weight: 700
+        - asset: assets/fonts/Inter-BoldItalic.woff2
+          weight: 700
+          style: italic
+        - asset: assets/fonts/Inter-Black.woff2
+          weight: 900
+        - asset: assets/fonts/Inter-BlackItalic.woff2
+          weight: 900
+          style: italic
 
 flutter_launcher_icons:
   android: true

@@ -22,13 +22,34 @@ class AuthService {
         
         return User.fromJson(userData);
       } else {
-        throw Exception('Login failed');
+        // Handle specific error messages from backend
+        final message = response.data['message'] ?? '';
+        if (message.toLowerCase().contains('password')) {
+          throw Exception('🔒 Incorrect password. Please try again.');
+        } else if (message.toLowerCase().contains('not found') || message.toLowerCase().contains('account')) {
+          throw Exception('⚠️ Account not found. Check your login details and try again.');
+        } else {
+          throw Exception('⚠️ Something went wrong. Please try again later.');
+        }
       }
     } catch (e) {
-      if (e.toString().contains('DioException')) {
-        throw Exception('Login failed: Unable to connect to server');
+      // If it's already a formatted error, pass it through
+      if (e.toString().contains('🔒') || e.toString().contains('⚠️') || e.toString().contains('🌐')) {
+        rethrow;
       }
-      throw Exception('Login failed: ${e.toString()}');
+      
+      // Handle actual network errors (connection issues)
+      if (e.toString().contains('SocketException') || 
+          e.toString().contains('Failed host lookup') ||
+          e.toString().contains('Connection refused') ||
+          e.toString().contains('Connection timed out')) {
+        throw Exception('🌐 Network error. Please check your internet connection.');
+      }
+      
+      // For DioException with response (bad credentials, validation errors, etc.)
+      // The error is already handled above in the if/else block
+      // So if we're here, it's an unexpected error
+      throw Exception('⚠️ Something went wrong. Please try again later.');
     }
   }
 
@@ -51,13 +72,32 @@ class AuthService {
         // Backend doesn't return token on register, so login after registration
         return await loginWithEmailPassword(email, password);
       } else {
-        throw Exception('Registration failed');
+        // Handle specific error messages from backend
+        final message = response.data['message'] ?? '';
+        if (message.toLowerCase().contains('exists') || message.toLowerCase().contains('already')) {
+          throw Exception('⚠️ This email is already registered. Please login instead.');
+        } else {
+          throw Exception('⚠️ Registration failed. Please try again later.');
+        }
       }
     } catch (e) {
-      if (e.toString().contains('DioException')) {
-        throw Exception('Registration failed: Unable to connect to server');
+      // If it's already a formatted error, pass it through
+      if (e.toString().contains('🔒') || e.toString().contains('⚠️') || e.toString().contains('🌐')) {
+        rethrow;
       }
-      throw Exception('Registration failed: ${e.toString()}');
+      
+      // Handle actual network errors (connection issues)
+      if (e.toString().contains('SocketException') || 
+          e.toString().contains('Failed host lookup') ||
+          e.toString().contains('Connection refused') ||
+          e.toString().contains('Connection timed out')) {
+        throw Exception('🌐 Network error. Please check your internet connection.');
+      }
+      
+      // For DioException with response (validation errors, etc.)
+      // The error is already handled above in the if/else block
+      // So if we're here, it's an unexpected error
+      throw Exception('⚠️ Registration failed. Please try again later.');
     }
   }
 

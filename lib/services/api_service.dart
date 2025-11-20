@@ -28,10 +28,11 @@ class ApiService {
       },
     ));
 
-    // Add logging interceptor for development
+    // Add logging interceptor for development (only in debug mode)
     _dio.interceptors.add(LogInterceptor(
       requestBody: true,
       responseBody: true,
+      error: false, // Don't log 401 errors verbosely (expected after logout)
       logPrint: (o) => print(o),
     ));
   }
@@ -159,6 +160,15 @@ class ApiService {
         'updatedAt': DateTime.now().toIso8601String(),
       }
     };
+  }
+
+  // Generic GET method
+  static Future<Response> get(String path) async {
+    try {
+      return await _dio.get(path);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   static Future<Map<String, dynamic>> mockRecharge(Map<String, dynamic> data) async {

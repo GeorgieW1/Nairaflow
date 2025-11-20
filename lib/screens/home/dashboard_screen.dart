@@ -21,8 +21,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     super.initState();
     // Initialize sample data after login
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      TransactionService.initializeSampleData();
-      ref.read(transactionProvider.notifier).loadTransactions();
+      // Only load if user is authenticated
+      if (ref.read(authProvider).isAuthenticated) {
+        TransactionService.initializeSampleData();
+        ref.read(transactionProvider.notifier).loadTransactions();
+      }
     });
   }
 
@@ -253,9 +256,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Future<void> _onRefresh() async {
-    await Future.wait([
-      ref.read(authProvider.notifier).refreshUser(),
-      ref.read(transactionProvider.notifier).loadTransactions(),
-    ]);
+    // Only refresh if user is authenticated
+    if (ref.read(authProvider).isAuthenticated) {
+      await Future.wait([
+        ref.read(authProvider.notifier).refreshUser(),
+        ref.read(transactionProvider.notifier).loadTransactions(),
+      ]);
+    }
   }
 }

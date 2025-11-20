@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nairaflow/providers/auth_provider.dart';
 import 'package:nairaflow/providers/transaction_provider.dart';
 import 'package:nairaflow/widgets/transaction_item.dart';
 
@@ -26,7 +27,12 @@ class TransactionHistoryScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => ref.read(transactionProvider.notifier).loadTransactions(),
+          onRefresh: () async {
+            // Only refresh if authenticated
+            if (ref.read(authProvider).isAuthenticated) {
+              await ref.read(transactionProvider.notifier).loadTransactions();
+            }
+          },
           child: transactionState.isLoading && transactionState.transactions.isEmpty
               ? const Center(child: CircularProgressIndicator())
               : transactionState.transactions.isEmpty

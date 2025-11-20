@@ -41,11 +41,12 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
             SnackBar(
               content: Text(next.error!),
               backgroundColor: Theme.of(context).colorScheme.error,
+              duration: const Duration(seconds: 4),
+              behavior: SnackBarBehavior.floating,
             ),
           );
-        } else {
-          _showSuccessDialog();
         }
+        // Success is now handled in _handleFunding method
       }
     });
 
@@ -270,32 +271,94 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                 
                 const SizedBox(height: 20),
                 
-                // Info note
+                // Test mode info banner
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.1),
+                    color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.3),
+                      color: Colors.blue.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: Row(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Theme.of(context).colorScheme.tertiary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'This is a demo app. In production, you would be redirected to complete the payment with your selected method.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.science_outlined,
+                            color: Colors.blue,
+                            size: 20,
                           ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '🧪 Test Mode - Paystack',
+                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Use these test card details:',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Card: 5060 6666 6666 6666 6666',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Expiry: 12/25 | CVV: 123',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'PIN: 1234 | OTP: 123456',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.lock_outline,
+                            size: 14,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Secured by Paystack',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -338,18 +401,28 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
     }
   }
 
-  void _handleFunding() {
+  Future<void> _handleFunding() async {
     if (_formKey.currentState?.validate() ?? false) {
       final amount = double.parse(_amountController.text);
       
-      ref.read(transactionProvider.notifier).fundWallet(
+      // Use Paystack for payment
+      final result = await ref.read(transactionProvider.notifier).fundWalletWithPaystack(
+        context: context,
         amount: amount,
         paymentMethod: _selectedPaymentMethod,
       );
+      
+      // Show success dialog if payment was successful
+      if (result['success'] == true && mounted) {
+        final newBalance = result['newBalance'] != null 
+            ? (result['newBalance'] as num).toDouble() 
+            : null;
+        _showSuccessDialog(newBalance);
+      }
     }
   }
 
-  void _showSuccessDialog() {
+  void _showSuccessDialog(double? newBalance) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -380,6 +453,16 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
+            if (newBalance != null)
+              Text(
+                'New Balance: ₦${newBalance.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            const SizedBox(height: 8),
             Text(
               'Your wallet has been funded successfully.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -395,8 +478,6 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
             onPressed: () {
               Navigator.of(context).pop();
               context.pop();
-              // Refresh auth provider to update wallet balance
-              ref.read(authProvider.notifier).refreshUser();
             },
           ),
         ],

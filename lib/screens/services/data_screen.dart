@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nairaflow/models/data_plan.dart';
 import 'package:nairaflow/models/transaction.dart';
 import 'package:nairaflow/providers/auth_provider.dart';
 import 'package:nairaflow/providers/transaction_provider.dart';
+import 'package:nairaflow/services/data_service.dart';
 import 'package:nairaflow/widgets/custom_button.dart';
 import 'package:nairaflow/widgets/custom_text_field.dart';
 import 'package:nairaflow/widgets/network_selector.dart';
@@ -20,41 +22,16 @@ class _DataScreenState extends ConsumerState<DataScreen> {
   final _phoneController = TextEditingController();
   
   NetworkProvider _selectedNetwork = NetworkProvider.mtn;
-  String? _selectedDataPackage;
-  
-  final Map<NetworkProvider, List<Map<String, dynamic>>> _dataPackages = {
-    NetworkProvider.mtn: [
-      {'name': '100MB - 1 Day', 'price': 100.0, 'validity': '1 Day'},
-      {'name': '500MB - 7 Days', 'price': 300.0, 'validity': '7 Days'},
-      {'name': '1GB - 30 Days', 'price': 500.0, 'validity': '30 Days'},
-      {'name': '2GB - 30 Days', 'price': 1000.0, 'validity': '30 Days'},
-      {'name': '5GB - 30 Days', 'price': 2000.0, 'validity': '30 Days'},
-      {'name': '10GB - 30 Days', 'price': 3500.0, 'validity': '30 Days'},
-    ],
-    NetworkProvider.airtel: [
-      {'name': '200MB - 3 Days', 'price': 200.0, 'validity': '3 Days'},
-      {'name': '750MB - 14 Days', 'price': 500.0, 'validity': '14 Days'},
-      {'name': '1.5GB - 30 Days', 'price': 1000.0, 'validity': '30 Days'},
-      {'name': '3GB - 30 Days', 'price': 1500.0, 'validity': '30 Days'},
-      {'name': '6GB - 30 Days', 'price': 2500.0, 'validity': '30 Days'},
-      {'name': '12GB - 30 Days', 'price': 4000.0, 'validity': '30 Days'},
-    ],
-    NetworkProvider.glo: [
-      {'name': '150MB - 1 Day', 'price': 100.0, 'validity': '1 Day'},
-      {'name': '650MB - 7 Days', 'price': 350.0, 'validity': '7 Days'},
-      {'name': '1.35GB - 14 Days', 'price': 500.0, 'validity': '14 Days'},
-      {'name': '2.9GB - 30 Days', 'price': 1000.0, 'validity': '30 Days'},
-      {'name': '5.8GB - 30 Days', 'price': 2000.0, 'validity': '30 Days'},
-      {'name': '14GB - 30 Days', 'price': 5000.0, 'validity': '30 Days'},
-    ],
-    NetworkProvider.nmobile: [
-      {'name': '500MB - 30 Days', 'price': 500.0, 'validity': '30 Days'},
-      {'name': '1.5GB - 30 Days', 'price': 1000.0, 'validity': '30 Days'},
-      {'name': '3.5GB - 30 Days', 'price': 2000.0, 'validity': '30 Days'},
-      {'name': '7.5GB - 30 Days', 'price': 4000.0, 'validity': '30 Days'},
-      {'name': '15GB - 30 Days', 'price': 8000.0, 'validity': '30 Days'},
-    ],
-  };
+  DataPlan? _selectedDataPlan;  // ← Changed to DataPlan object
+  List<DataPlan> _dataPlans = [];  // ← Real plans from backend
+  bool _isLoadingPlans = false;
+  String? _plansError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDataPlans();  // ← Fetch plans when screen loads
+  }
 
   @override
   void dispose() {
@@ -62,19 +39,51 @@ class _DataScreenState extends ConsumerState<DataScreen> {
     super.dispose();
   }
 
+  /// ✅ STEP 1: Fetch data plans from backend
+  Future<void> _loadDataPlans() async {
+    setState(() {
+      _isLoadingPlans = true;
+      _plansError = null;
+    });
+
+    try {
+      final plans = await DataService.fetchDataPlans(_selectedNetwork);
+      setState(() {
+        _dataPlans = plans;
+        _isLoadingPlans = false;
+        _selectedDataPlan = null;  // Reset selection
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingPlans = false;
+        _plansError = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final transactionState = ref.watch(transactionProvider);
     final user = ref.watch(authProvider).user;
-    final currentPackages = _dataPackages[_selectedNetwork] ?? [];
 
     ref.listen<TransactionState>(transactionProvider, (previous, next) {
       if (previous?.isLoading == true && next.isLoading == false) {
         if (next.error != null) {
+          // Clean up error message
+          final errorMessage = next.error!
+              .replaceFirst('Exception: ', '')
+              .replaceFirst('Data purchase failed: ', '');
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(next.error!),
+              content: Text(errorMessage),
               backgroundColor: Theme.of(context).colorScheme.error,
+              duration: const Duration(seconds: 5), // Show longer
+              action: SnackBarAction(
+                label: 'OK',
+                textColor: Colors.white,
+                onPressed: () {},
+              ),
             ),
           );
         } else {
@@ -154,8 +163,9 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                   onNetworkChanged: (network) {
                     setState(() {
                       _selectedNetwork = network;
-                      _selectedDataPackage = null; // Reset selection when network changes
+                      _selectedDataPlan = null;  // Reset selection
                     });
+                    _loadDataPlans();  // ← Fetch new plans for selected network
                   },
                 ),
                 
@@ -197,14 +207,75 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                 
                 const SizedBox(height: 12),
                 
-                ...currentPackages.map((package) {
-                  final isSelected = _selectedDataPackage == package['name'];
+                // Show loading state
+                if (_isLoadingPlans)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                // Show error state
+                else if (_plansError != null)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.errorContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Failed to load plans',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _plansError!,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: _loadDataPlans,
+                        ),
+                      ],
+                    ),
+                  )
+                // Show data plans
+                else if (_dataPlans.isEmpty)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Text(
+                        'No data plans available',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  )
+                else
+                  ..._dataPlans.map((plan) {
+                  final isSelected = _selectedDataPlan?.variationCode == plan.variationCode;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: GestureDetector(
                       onTap: () {
                         setState(() {
-                          _selectedDataPackage = package['name'];
+                          _selectedDataPlan = plan;  // ← Store full plan object
                         });
                       },
                       child: Container(
@@ -242,7 +313,7 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    package['name'],
+                                    plan.name,
                                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       fontWeight: FontWeight.w600,
                                       color: isSelected
@@ -252,7 +323,7 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Valid for ${package['validity']}',
+                                    plan.validity != null ? 'Valid for ${plan.validity}' : '',
                                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                     ),
@@ -261,7 +332,7 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                               ),
                             ),
                             Text(
-                              '₦${package['price'].toStringAsFixed(0)}',
+                              '₦${plan.amount.toStringAsFixed(0)}',
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: isSelected
@@ -281,7 +352,7 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                 // Purchase button
                 CustomButton(
                   text: 'Purchase Data',
-                  onPressed: (transactionState.isLoading || _selectedDataPackage == null) 
+                  onPressed: (transactionState.isLoading || _selectedDataPlan == null) 
                     ? null 
                     : _handlePurchase,
                   isLoading: transactionState.isLoading,
@@ -296,9 +367,10 @@ class _DataScreenState extends ConsumerState<DataScreen> {
     );
   }
 
+  /// ✅ STEP 3: Purchase with variation_code
   void _handlePurchase() {
     if (_formKey.currentState?.validate() ?? false) {
-      if (_selectedDataPackage == null) {
+      if (_selectedDataPlan == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Please select a data package'),
@@ -307,14 +379,10 @@ class _DataScreenState extends ConsumerState<DataScreen> {
         );
         return;
       }
-
-      final selectedPackage = _dataPackages[_selectedNetwork]!
-          .firstWhere((package) => package['name'] == _selectedDataPackage);
       
-      final amount = selectedPackage['price'] as double;
       final user = ref.read(authProvider).user;
       
-      if (amount > (user?.walletBalance ?? 0)) {
+      if (_selectedDataPlan!.amount > (user?.walletBalance ?? 0)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Insufficient wallet balance'),
@@ -324,11 +392,13 @@ class _DataScreenState extends ConsumerState<DataScreen> {
         return;
       }
       
+      // ✅ Send variation_code to backend!
       ref.read(transactionProvider.notifier).purchaseData(
         phone: _phoneController.text.trim(),
         network: _selectedNetwork,
-        amount: amount,
-        dataPackage: _selectedDataPackage!,
+        amount: _selectedDataPlan!.amount,
+        dataPackage: _selectedDataPlan!.name,
+        variationCode: _selectedDataPlan!.variationCode,  // ← THE KEY!
       );
     }
   }

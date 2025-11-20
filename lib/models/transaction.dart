@@ -30,28 +30,66 @@ class Transaction {
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
+    // Map backend transaction types to Flutter enum
+    String typeString = json['type'] ?? 'airtime';
+    
+    // Backend sends "credit" for wallet funding, map it to "funding"
+    if (typeString == 'credit' || typeString == 'debit') {
+      typeString = 'funding';
+    }
+    
+    // Extract metadata if it exists (phone and network are nested)
+    final metadata = json['metadata'] as Map<String, dynamic>? ?? {};
+    
     return Transaction(
-      id: json['id'] ?? '',
-      userId: json['userId'] ?? '',
+      // Backend uses _id instead of id
+      id: json['_id'] ?? json['id'] ?? '',
+      userId: json['userId'] ?? json['user'] ?? '',
       type: TransactionType.values.firstWhere(
-        (e) => e.name == json['type'],
+        (e) => e.name == typeString,
         orElse: () => TransactionType.airtime,
       ),
       amount: (json['amount'] ?? 0).toDouble(),
-      phone: json['phone'],
-      network: json['network'] != null 
-        ? NetworkProvider.values.firstWhere(
-            (e) => e.name == json['network'],
-            orElse: () => NetworkProvider.mtn,
-          )
-        : null,
+      // Phone can be at root or in metadata
+      phone: json['phone'] ?? metadata['phone'],
+      // Network can be at root or in metadata, and may be uppercase
+      network: _parseNetwork(json['network'] ?? metadata['network']),
       description: json['description'],
-      status: TransactionStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => TransactionStatus.pending,
-      ),
+      status: _parseStatus(json['status']),
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+    );
+  }
+
+  // Helper method to parse network from backend (handles uppercase values)
+  static NetworkProvider? _parseNetwork(dynamic network) {
+    if (network == null) return null;
+    
+    String networkString = network.toString().toLowerCase();
+    
+    // Handle 9mobile variations
+    if (networkString == '9mobile' || networkString == '9mob') {
+      networkString = 'nmobile';
+    }
+    
+    return NetworkProvider.values.firstWhere(
+      (e) => e.name == networkString,
+      orElse: () => NetworkProvider.mtn,
+    );
+  }
+
+  // Helper method to parse status from backend
+  static TransactionStatus _parseStatus(dynamic status) {
+    String statusString = (status ?? 'pending').toString().toLowerCase();
+    
+    // Backend sends "completed", map it to "success"
+    if (statusString == 'completed') {
+      statusString = 'success';
+    }
+    
+    return TransactionStatus.values.firstWhere(
+      (e) => e.name == statusString,
+      orElse: () => TransactionStatus.pending,
     );
   }
 

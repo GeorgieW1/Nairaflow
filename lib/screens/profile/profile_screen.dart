@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nairaflow/providers/auth_provider.dart';
 import 'package:nairaflow/widgets/custom_button.dart';
 
@@ -303,9 +304,16 @@ class ProfileScreen extends ConsumerWidget {
           ),
           CustomButton(
             text: 'Logout',
-            onPressed: () {
-              Navigator.of(context).pop();
-              ref.read(authProvider.notifier).logout();
+            onPressed: () async {
+              Navigator.of(context).pop(); // Close dialog
+              
+              // IMMEDIATELY clear auth state to stop ALL API calls
+              await ref.read(authProvider.notifier).logout();
+              
+              // Navigate to login after clearing state
+              if (context.mounted) {
+                GoRouter.of(context).go('/login');
+              }
             },
             width: 100,
           ),
