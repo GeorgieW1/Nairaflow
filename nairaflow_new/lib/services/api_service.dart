@@ -1,15 +1,16 @@
 import 'package:dio/dio.dart';
-import 'package:nairaflow/services/storage_service.dart';
+import 'package:nairaflow_new/services/storage_service.dart';
 
 class ApiService {
   static final Dio _dio = Dio();
-  static const String _baseUrl = 'https://nairapay-backend-production.up.railway.app/api';
+  static const String _baseUrl =
+      'https://nairapay-backend-production.up.railway.app/api';
 
   static void initialize() {
     _dio.options.baseUrl = _baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
-    
+
     // Add JWT token interceptor
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
@@ -44,7 +45,8 @@ class ApiService {
   }
 
   // Generic GET method
-  static Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) async {
+  static Future<Response> get(String path,
+      {Map<String, dynamic>? queryParameters}) async {
     try {
       return await _dio.get(path, queryParameters: queryParameters);
     } catch (e) {
@@ -53,7 +55,8 @@ class ApiService {
   }
 
   // Generic POST method
-  static Future<Response> post(String path, {Map<String, dynamic>? data}) async {
+  static Future<Response> post(String path,
+      {Map<String, dynamic>? data}) async {
     try {
       return await _dio.post(path, data: data);
     } catch (e) {
@@ -129,7 +132,8 @@ class ApiService {
   }
 
   // Transaction endpoints
-  static Future<Response> getTransactions({int page = 1, int limit = 20, String? type}) async {
+  static Future<Response> getTransactions(
+      {int page = 1, int limit = 20, String? type}) async {
     try {
       final queryParams = <String, dynamic>{'page': page, 'limit': limit};
       if (type != null) queryParams['type'] = type;
@@ -140,9 +144,10 @@ class ApiService {
   }
 
   // Mock responses for development (when backend is not available)
-  static Future<Map<String, dynamic>> mockLogin(String email, String password) async {
+  static Future<Map<String, dynamic>> mockLogin(
+      String email, String password) async {
     await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-    
+
     if (email == 'test@nairaflow.com' && password == 'password') {
       return {
         'success': true,
@@ -153,7 +158,9 @@ class ApiService {
           'email': email,
           'phone': '08012345678',
           'walletBalance': 5000.0,
-          'createdAt': DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
+          'createdAt': DateTime.now()
+              .subtract(const Duration(days: 30))
+              .toIso8601String(),
           'updatedAt': DateTime.now().toIso8601String(),
         }
       };
@@ -162,9 +169,10 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> mockRegister(Map<String, dynamic> userData) async {
+  static Future<Map<String, dynamic>> mockRegister(
+      Map<String, dynamic> userData) async {
     await Future.delayed(const Duration(seconds: 1));
-    
+
     return {
       'success': true,
       'token': 'mock_jwt_token_12345',

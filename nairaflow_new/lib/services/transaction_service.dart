@@ -1,7 +1,7 @@
-import 'package:nairaflow/models/transaction.dart';
-import 'package:nairaflow/models/user.dart';
-import 'package:nairaflow/services/api_service.dart';
-import 'package:nairaflow/services/storage_service.dart';
+import 'package:nairaflow_new/models/transaction.dart';
+import 'package:nairaflow_new/models/user.dart';
+import 'package:nairaflow_new/services/api_service.dart';
+import 'package:nairaflow_new/services/storage_service.dart';
 
 class TransactionService {
   // Purchase airtime
@@ -18,9 +18,10 @@ class TransactionService {
       };
 
       final response = await ApiService.buyAirtime(requestData);
-      
+
       if (response.data['success'] == true) {
-        final transactionData = response.data['transaction'] as Map<String, dynamic>;
+        final transactionData =
+            response.data['transaction'] as Map<String, dynamic>;
         final transaction = Transaction.fromJson({
           ...transactionData,
           'userId': await _getCurrentUserId(),
@@ -31,7 +32,7 @@ class TransactionService {
 
         // Store transaction locally
         await _storeTransaction(transaction);
-        
+
         // Refresh wallet balance from backend
         await _refreshWalletBalance();
 
@@ -65,9 +66,10 @@ class TransactionService {
       };
 
       final response = await ApiService.buyData(requestData);
-      
+
       if (response.data['success'] == true) {
-        final transactionData = response.data['transaction'] as Map<String, dynamic>;
+        final transactionData =
+            response.data['transaction'] as Map<String, dynamic>;
         final transaction = Transaction.fromJson({
           ...transactionData,
           'userId': await _getCurrentUserId(),
@@ -79,7 +81,7 @@ class TransactionService {
 
         // Store transaction locally
         await _storeTransaction(transaction);
-        
+
         // Refresh wallet balance from backend
         await _refreshWalletBalance();
 
@@ -111,9 +113,10 @@ class TransactionService {
       };
 
       final response = await ApiService.payElectricity(requestData);
-      
+
       if (response.data['success'] == true) {
-        final transactionData = response.data['transaction'] as Map<String, dynamic>;
+        final transactionData =
+            response.data['transaction'] as Map<String, dynamic>;
         final transaction = Transaction.fromJson({
           ...transactionData,
           'userId': await _getCurrentUserId(),
@@ -124,7 +127,7 @@ class TransactionService {
 
         // Store transaction locally
         await _storeTransaction(transaction);
-        
+
         // Refresh wallet balance from backend
         await _refreshWalletBalance();
 
@@ -134,7 +137,8 @@ class TransactionService {
       }
     } catch (e) {
       if (e.toString().contains('DioException')) {
-        throw Exception('Electricity payment failed: Unable to connect to server');
+        throw Exception(
+            'Electricity payment failed: Unable to connect to server');
       }
       throw Exception('Electricity payment failed: ${e.toString()}');
     }
@@ -158,9 +162,10 @@ class TransactionService {
       };
 
       final response = await ApiService.post('/services/tv', data: requestData);
-      
+
       if (response.data['success'] == true) {
-        final transactionData = response.data['transaction'] as Map<String, dynamic>;
+        final transactionData =
+            response.data['transaction'] as Map<String, dynamic>;
         final transaction = Transaction.fromJson({
           ...transactionData,
           'userId': await _getCurrentUserId(),
@@ -171,7 +176,7 @@ class TransactionService {
 
         // Store transaction locally
         await _storeTransaction(transaction);
-        
+
         // Refresh wallet balance from backend
         await _refreshWalletBalance();
 
@@ -202,10 +207,12 @@ class TransactionService {
         if (phone != null) 'phone': phone,
       };
 
-      final response = await ApiService.post('/services/epin', data: requestData);
-      
+      final response =
+          await ApiService.post('/services/epin', data: requestData);
+
       if (response.data['success'] == true) {
-        final transactionData = response.data['transaction'] as Map<String, dynamic>;
+        final transactionData =
+            response.data['transaction'] as Map<String, dynamic>;
         final transaction = Transaction.fromJson({
           ...transactionData,
           'userId': await _getCurrentUserId(),
@@ -216,7 +223,7 @@ class TransactionService {
 
         // Store transaction locally
         await _storeTransaction(transaction);
-        
+
         // Refresh wallet balance from backend
         await _refreshWalletBalance();
 
@@ -244,9 +251,10 @@ class TransactionService {
       };
 
       final response = await ApiService.fundWallet(requestData);
-      
+
       if (response.data['success'] == true) {
-        final transactionData = response.data['transaction'] as Map<String, dynamic>;
+        final transactionData =
+            response.data['transaction'] as Map<String, dynamic>;
         final transaction = Transaction.fromJson({
           ...transactionData,
           'userId': await _getCurrentUserId(),
@@ -257,7 +265,7 @@ class TransactionService {
 
         // Store transaction locally
         await _storeTransaction(transaction);
-        
+
         // Refresh wallet balance from backend
         await _refreshWalletBalance();
 
@@ -282,28 +290,28 @@ class TransactionService {
         // No token, return cached transactions or empty list
         return await _getLocalTransactions();
       }
-      
+
       final response = await ApiService.getTransactions(limit: 100);
       final userId = await _getCurrentUserId();
-      
+
       if (response.data['success'] == true) {
         final transactionsData = response.data['transactions'] as List;
         final transactions = transactionsData
             .map((t) => Transaction.fromJson({
-              ...t,
-              'userId': t['userId'] ?? t['user']?['_id'] ?? userId,
-            }))
+                  ...t,
+                  'userId': t['userId'] ?? t['user']?['_id'] ?? userId,
+                }))
             .toList();
-        
+
         // Cache transactions locally
         await StorageService.storeList(
           'transactions',
           transactions.map((t) => t.toJson()).toList(),
         );
-        
+
         return transactions..sort((a, b) => b.createdAt.compareTo(a.createdAt));
       }
-      
+
       // Fallback to local storage if API fails
       return await _getLocalTransactions();
     } catch (e) {
@@ -316,7 +324,7 @@ class TransactionService {
     try {
       final transactions = await StorageService.getList('transactions');
       final userId = await _getCurrentUserId();
-      
+
       return transactions
           .where((t) => t['userId'] == userId)
           .map((t) => Transaction.fromJson(t))
@@ -348,10 +356,10 @@ class TransactionService {
   static Future<void> _refreshWalletBalance() async {
     try {
       final response = await ApiService.getWalletBalance();
-      
+
       if (response.data['success'] == true) {
         final balance = (response.data['balance'] as num).toDouble();
-        
+
         // Update local user data with new balance
         final userData = await StorageService.getJson('user_data');
         if (userData != null) {
@@ -372,7 +380,7 @@ class TransactionService {
   static Future<void> initializeSampleData() async {
     final existingTransactions = await StorageService.getList('transactions');
     if (existingTransactions.isNotEmpty) return; // Already initialized
-    
+
     final userId = await _getCurrentUserId();
     if (userId.isEmpty) return;
 

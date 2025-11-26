@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/models/transaction.dart';
-import 'package:nairaflow/providers/transaction_provider.dart';
-import 'package:nairaflow/services/tv_service.dart';
-import 'package:nairaflow/widgets/custom_button.dart';
-import 'package:nairaflow/widgets/custom_text_field.dart';
+import 'package:nairaflow_new/models/transaction.dart';
+import 'package:nairaflow_new/providers/transaction_provider.dart';
+import 'package:nairaflow_new/services/tv_service.dart';
+import 'package:nairaflow_new/widgets/custom_button.dart';
+import 'package:nairaflow_new/widgets/custom_text_field.dart';
 
 class TVScreen extends ConsumerStatefulWidget {
   const TVScreen({super.key});
@@ -18,22 +18,26 @@ class _TVScreenState extends ConsumerState<TVScreen> {
   final _formKey = GlobalKey<FormState>();
   final _smartcardController = TextEditingController();
   final _phoneController = TextEditingController();
-  
+
   String _selectedProvider = 'DSTV';
   String? _selectedBouquetCode;
   Map<String, dynamic>? _selectedBouquet;
-  
+
   bool _isVerifying = false;
   bool _isSmartcardVerified = false;
   Map<String, dynamic>? _customerDetails;
-  
+
   bool _isLoadingPlans = false;
   List<dynamic> _availablePlans = [];
-  
+
   final List<Map<String, dynamic>> _providers = [
     {'code': 'DSTV', 'name': 'DSTV', 'color': const Color(0xFF00A4E4)},
     {'code': 'GOTV', 'name': 'GOtv', 'color': const Color(0xFFF37021)},
-    {'code': 'STARTIMES', 'name': 'Startimes', 'color': const Color(0xFF0072CE)},
+    {
+      'code': 'STARTIMES',
+      'name': 'Startimes',
+      'color': const Color(0xFF0072CE)
+    },
   ];
 
   @override
@@ -185,12 +189,13 @@ class _TVScreenState extends ConsumerState<TVScreen> {
     if (confirmed != true) return;
 
     await ref.read(transactionProvider.notifier).subscribeTVService(
-      smartcardNumber: _smartcardController.text,
-      provider: _selectedProvider,
-      bouquetCode: _selectedBouquetCode!,
-      amount: amount,
-      phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
-    );
+          smartcardNumber: _smartcardController.text,
+          provider: _selectedProvider,
+          bouquetCode: _selectedBouquetCode!,
+          amount: amount,
+          phone:
+              _phoneController.text.isNotEmpty ? _phoneController.text : null,
+        );
 
     if (mounted) {
       final state = ref.read(transactionProvider);
@@ -214,7 +219,8 @@ class _TVScreenState extends ConsumerState<TVScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('You have successfully subscribed to ${_selectedBouquet!['name']}'),
+            Text(
+                'You have successfully subscribed to ${_selectedBouquet!['name']}'),
             const SizedBox(height: 8),
             Text(
               'Amount: ₦${amount.toStringAsFixed(2)}',
@@ -266,18 +272,23 @@ class _TVScreenState extends ConsumerState<TVScreen> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: GestureDetector(
-                        onTap: isLoading ? null : () => _onProviderChanged(provider['code']),
+                        onTap: isLoading
+                            ? null
+                            : () => _onProviderChanged(provider['code']),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                            color: isSelected 
-                              ? provider['color'] 
-                              : Theme.of(context).colorScheme.surface,
+                            color: isSelected
+                                ? provider['color']
+                                : Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isSelected
-                                ? provider['color']
-                                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                                  ? provider['color']
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .outline
+                                      .withValues(alpha: 0.2),
                               width: isSelected ? 2 : 1,
                             ),
                           ),
@@ -286,9 +297,9 @@ class _TVScreenState extends ConsumerState<TVScreen> {
                               Text(
                                 provider['name'],
                                 style: TextStyle(
-                                  color: isSelected 
-                                    ? Colors.white 
-                                    : Theme.of(context).colorScheme.onSurface,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Theme.of(context).colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -300,7 +311,7 @@ class _TVScreenState extends ConsumerState<TVScreen> {
                   );
                 }).toList(),
               ),
-              
+
               const SizedBox(height: 24),
 
               // Smartcard Verification
@@ -341,21 +352,20 @@ class _TVScreenState extends ConsumerState<TVScreen> {
                   SizedBox(
                     height: 56,
                     child: FilledButton(
-                      onPressed: isLoading || _isVerifying 
-                        ? null 
-                        : _verifySmartcard,
+                      onPressed:
+                          isLoading || _isVerifying ? null : _verifySmartcard,
                       style: FilledButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: _isVerifying
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Verify'),
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Verify'),
                     ),
                   ),
                 ],
@@ -369,14 +379,16 @@ class _TVScreenState extends ConsumerState<TVScreen> {
                   decoration: BoxDecoration(
                     color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                    border:
+                        Border.all(color: Colors.green.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                          const Icon(Icons.check_circle,
+                              color: Colors.green, size: 20),
                           const SizedBox(width: 8),
                           Text(
                             'Customer Verified',
@@ -390,7 +402,8 @@ class _TVScreenState extends ConsumerState<TVScreen> {
                       const SizedBox(height: 8),
                       Text('Name: ${_customerDetails!['customerName']}'),
                       if (_customerDetails!['currentBouquet'] != null)
-                        Text('Current Plan: ${_customerDetails!['currentBouquet']}'),
+                        Text(
+                            'Current Plan: ${_customerDetails!['currentBouquet']}'),
                     ],
                   ),
                 ),
@@ -415,14 +428,16 @@ class _TVScreenState extends ConsumerState<TVScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                   ),
                   hint: const Text('Choose a package'),
                   items: _availablePlans.map((plan) {
                     return DropdownMenuItem<String>(
                       value: plan['code'],
                       child: SizedBox(
-                        width: MediaQuery.of(context).size.width - 80, // Prevent overflow
+                        width: MediaQuery.of(context).size.width -
+                            80, // Prevent overflow
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -434,22 +449,25 @@ class _TVScreenState extends ConsumerState<TVScreen> {
                             ),
                             Text(
                               '₦${plan['amount']}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
                       ),
                     );
                   }).toList(),
-                  onChanged: isLoading ? null : (value) {
-                    setState(() {
-                      _selectedBouquetCode = value;
-                      _selectedBouquet = _availablePlans.firstWhere(
-                        (p) => p['code'] == value,
-                        orElse: () => null,
-                      );
-                    });
-                  },
+                  onChanged: isLoading
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _selectedBouquetCode = value;
+                            _selectedBouquet = _availablePlans.firstWhere(
+                              (p) => p['code'] == value,
+                              orElse: () => null,
+                            );
+                          });
+                        },
                 ),
 
               const SizedBox(height: 24),

@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:nairaflow/services/storage_service.dart';
-import 'package:nairaflow/screens/wallet/paystack_payment_screen.dart';
+import 'package:nairaflow_new/services/storage_service.dart';
+import 'package:nairaflow_new/screens/wallet/paystack_payment_screen.dart';
 
 class PaystackService {
-  static const String baseUrl = 'https://nairapay-backend-production.up.railway.app/api';
-  static const String publicKey = 'pk_test_b867557d197b144374335c8bcb107b2f38adfc3c';
+  static const String baseUrl =
+      'https://nairapay-backend-production.up.railway.app/api';
+  static const String publicKey =
+      'pk_test_b867557d197b144374335c8bcb107b2f38adfc3c';
 
   /// Initialize Paystack plugin (call this in main.dart)
   static Future<void> initialize() async {
@@ -70,8 +72,10 @@ class PaystackService {
       }
 
       // Step 3: Open Paystack payment page in inline webview
-      if (!context.mounted) return {'success': false, 'message': '⚠️ Context lost'};
-      
+      if (!context.mounted) {
+        return {'success': false, 'message': '⚠️ Context lost'};
+      }
+
       final paymentCompleted = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (context) => PaystackPaymentScreen(
@@ -123,18 +127,18 @@ class PaystackService {
     } catch (e) {
       // Handle specific error messages
       String errorMessage = e.toString();
-      
+
       if (errorMessage.contains('Exception:')) {
         errorMessage = errorMessage.replaceFirst('Exception: ', '');
       }
-      
+
       if (errorMessage.contains('401')) {
         return {
           'success': false,
           'message': '⚠️ Session expired. Please login again.',
         };
       }
-      
+
       if (errorMessage.contains('timeout')) {
         return {
           'success': false,

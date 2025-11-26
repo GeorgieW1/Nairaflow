@@ -1,51 +1,56 @@
-import 'package:nairaflow/models/user.dart';
-import 'package:nairaflow/services/api_service.dart';
-import 'package:nairaflow/services/storage_service.dart';
+import 'package:nairaflow_new/models/user.dart';
+import 'package:nairaflow_new/services/api_service.dart';
+import 'package:nairaflow_new/services/storage_service.dart';
 
 class AuthService {
-
   // Email/Password Authentication
-  static Future<User> loginWithEmailPassword(String email, String password) async {
+  static Future<User> loginWithEmailPassword(
+      String email, String password) async {
     try {
       final response = await ApiService.login({
         'email': email,
         'password': password,
       });
-      
+
       if (response.data['success'] == true) {
         // Store JWT token securely
         await StorageService.storeSecure('jwt_token', response.data['token']);
-        
+
         // Store user data
         final userData = response.data['user'] as Map<String, dynamic>;
         await StorageService.storeJson('user_data', userData);
-        
+
         return User.fromJson(userData);
       } else {
         // Handle specific error messages from backend
         final message = response.data['message'] ?? '';
         if (message.toLowerCase().contains('password')) {
           throw Exception('🔒 Incorrect password. Please try again.');
-        } else if (message.toLowerCase().contains('not found') || message.toLowerCase().contains('account')) {
-          throw Exception('⚠️ Account not found. Check your login details and try again.');
+        } else if (message.toLowerCase().contains('not found') ||
+            message.toLowerCase().contains('account')) {
+          throw Exception(
+              '⚠️ Account not found. Check your login details and try again.');
         } else {
           throw Exception('⚠️ Something went wrong. Please try again later.');
         }
       }
     } catch (e) {
       // If it's already a formatted error, pass it through
-      if (e.toString().contains('🔒') || e.toString().contains('⚠️') || e.toString().contains('🌐')) {
+      if (e.toString().contains('🔒') ||
+          e.toString().contains('⚠️') ||
+          e.toString().contains('🌐')) {
         rethrow;
       }
-      
+
       // Handle actual network errors (connection issues)
-      if (e.toString().contains('SocketException') || 
+      if (e.toString().contains('SocketException') ||
           e.toString().contains('Failed host lookup') ||
           e.toString().contains('Connection refused') ||
           e.toString().contains('Connection timed out')) {
-        throw Exception('🌐 Network error. Please check your internet connection.');
+        throw Exception(
+            '🌐 Network error. Please check your internet connection.');
       }
-      
+
       // For DioException with response (bad credentials, validation errors, etc.)
       // The error is already handled above in the if/else block
       // So if we're here, it's an unexpected error
@@ -67,33 +72,38 @@ class AuthService {
       };
 
       final response = await ApiService.register(userData);
-      
+
       if (response.data['success'] == true) {
         // Backend doesn't return token on register, so login after registration
         return await loginWithEmailPassword(email, password);
       } else {
         // Handle specific error messages from backend
         final message = response.data['message'] ?? '';
-        if (message.toLowerCase().contains('exists') || message.toLowerCase().contains('already')) {
-          throw Exception('⚠️ This email is already registered. Please login instead.');
+        if (message.toLowerCase().contains('exists') ||
+            message.toLowerCase().contains('already')) {
+          throw Exception(
+              '⚠️ This email is already registered. Please login instead.');
         } else {
           throw Exception('⚠️ Registration failed. Please try again later.');
         }
       }
     } catch (e) {
       // If it's already a formatted error, pass it through
-      if (e.toString().contains('🔒') || e.toString().contains('⚠️') || e.toString().contains('🌐')) {
+      if (e.toString().contains('🔒') ||
+          e.toString().contains('⚠️') ||
+          e.toString().contains('🌐')) {
         rethrow;
       }
-      
+
       // Handle actual network errors (connection issues)
-      if (e.toString().contains('SocketException') || 
+      if (e.toString().contains('SocketException') ||
           e.toString().contains('Failed host lookup') ||
           e.toString().contains('Connection refused') ||
           e.toString().contains('Connection timed out')) {
-        throw Exception('🌐 Network error. Please check your internet connection.');
+        throw Exception(
+            '🌐 Network error. Please check your internet connection.');
       }
-      
+
       // For DioException with response (validation errors, etc.)
       // The error is already handled above in the if/else block
       // So if we're here, it's an unexpected error
@@ -114,15 +124,15 @@ class AuthService {
 
       // Send to backend for user creation/sync
       final response = await ApiService.mockRegister(userData);
-      
+
       if (response['success'] == true) {
         // Store JWT token securely
         await StorageService.storeSecure('jwt_token', response['token']);
-        
+
         // Store user data
         final userDataResponse = response['user'] as Map<String, dynamic>;
         await StorageService.storeJson('user_data', userDataResponse);
-        
+
         return User.fromJson(userDataResponse);
       }
 
@@ -167,7 +177,7 @@ class AuthService {
 
       // Fetch fresh data from API
       final response = await ApiService.verifyToken();
-      
+
       if (response.data['success'] == true) {
         final userData = response.data['user'] as Map<String, dynamic>;
         await StorageService.storeJson('user_data', userData);

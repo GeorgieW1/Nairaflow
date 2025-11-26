@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:nairaflow/models/transaction.dart';
+import 'package:nairaflow_new/models/transaction.dart';
 import 'package:share_plus/share_plus.dart';
 
 class TransactionReceiptScreen extends StatelessWidget {
@@ -37,9 +37,9 @@ class TransactionReceiptScreen extends StatelessWidget {
           children: [
             // Status Header
             _buildStatusHeader(context),
-            
+
             const SizedBox(height: 24),
-            
+
             // Receipt Card
             Padding(
               padding: const EdgeInsets.all(20),
@@ -61,7 +61,10 @@ class TransactionReceiptScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.1),
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(16),
                           topRight: Radius.circular(16),
@@ -87,7 +90,7 @@ class TransactionReceiptScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    
+
                     // Receipt Details
                     Padding(
                       padding: const EdgeInsets.all(24),
@@ -102,9 +105,9 @@ class TransactionReceiptScreen extends StatelessWidget {
                               color: Colors.black,
                             ),
                           ),
-                          
+
                           const SizedBox(height: 8),
-                          
+
                           // Transaction Type
                           Text(
                             transaction.typeDisplayName,
@@ -113,43 +116,48 @@ class TransactionReceiptScreen extends StatelessWidget {
                               color: Colors.grey[600],
                             ),
                           ),
-                          
+
                           const SizedBox(height: 24),
                           const Divider(),
                           const SizedBox(height: 24),
-                          
+
                           // Transaction Details
                           _buildDetailRow('Transaction ID', transaction.id),
                           _buildDetailRow('Status', _getStatusText()),
                           _buildDetailRow(
                             'Date',
-                            DateFormat('MMM dd, yyyy - hh:mm a').format(transaction.createdAt),
+                            DateFormat('MMM dd, yyyy - hh:mm a')
+                                .format(transaction.createdAt),
                           ),
-                          
+
                           // Conditional fields based on transaction type
-                          if (transaction.type == TransactionType.airtime || 
-                              transaction.type == TransactionType.data)
-                            ...[
-                              _buildDetailRow('Phone Number', transaction.phone ?? 'N/A'),
-                              _buildDetailRow('Network', transaction.networkDisplayName),
-                            ],
-                          
+                          if (transaction.type == TransactionType.airtime ||
+                              transaction.type == TransactionType.data) ...[
+                            _buildDetailRow(
+                                'Phone Number', transaction.phone ?? 'N/A'),
+                            _buildDetailRow(
+                                'Network', transaction.networkDisplayName),
+                          ],
+
                           if (transaction.type == TransactionType.electricity)
-                            _buildDetailRow('Meter Number', transaction.phone ?? 'N/A'),
-                          
+                            _buildDetailRow(
+                                'Meter Number', transaction.phone ?? 'N/A'),
+
                           if (transaction.type == TransactionType.funding)
                             _buildDetailRow('Payment Method', 'Paystack'),
-                          
+
                           if (transaction.description != null)
-                            _buildDetailRow('Description', transaction.description!),
-                          
-                          if (transaction.type == TransactionType.data && 
+                            _buildDetailRow(
+                                'Description', transaction.description!),
+
+                          if (transaction.type == TransactionType.data &&
                               transaction.description != null)
-                            _buildDetailRow('Data Plan', transaction.description!),
+                            _buildDetailRow(
+                                'Data Plan', transaction.description!),
                         ],
                       ),
                     ),
-                    
+
                     // Footer
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -184,9 +192,9 @@ class TransactionReceiptScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Action Buttons
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -204,9 +212,9 @@ class TransactionReceiptScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // Share Receipt
                   ElevatedButton.icon(
                     onPressed: _shareReceipt,
@@ -222,7 +230,7 @@ class TransactionReceiptScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 40),
           ],
         ),
@@ -234,7 +242,7 @@ class TransactionReceiptScreen extends StatelessWidget {
     Color statusColor;
     IconData statusIcon;
     String statusText;
-    
+
     switch (transaction.status) {
       case TransactionStatus.success:
         statusColor = Colors.green;
@@ -252,7 +260,7 @@ class TransactionReceiptScreen extends StatelessWidget {
         statusText = 'Transaction Failed';
         break;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24),
       color: statusColor.withValues(alpha: 0.1),
@@ -353,7 +361,7 @@ ${transaction.description != null ? 'Description: ${transaction.description}' : 
 Thank you for using NairaFlow!
 ━━━━━━━━━━━━━━━━━━━━━━
 ''';
-    
+
     Share.share(receiptText, subject: 'NairaFlow Transaction Receipt');
   }
 }

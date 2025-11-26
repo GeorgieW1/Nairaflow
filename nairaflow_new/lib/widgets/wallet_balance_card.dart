@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nairaflow/widgets/custom_button.dart';
+import 'package:nairaflow_new/widgets/custom_button.dart';
 
 class WalletBalanceCard extends StatefulWidget {
   final double balance;
@@ -54,16 +54,21 @@ class _WalletBalanceCardState extends State<WalletBalanceCard> {
                   Text(
                     'Wallet Balance',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
-                    ),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimary
+                              .withValues(alpha: 0.8),
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _isBalanceVisible ? '₦${_formatBalance(widget.balance)}' : '****',
+                    _isBalanceVisible
+                        ? '₦${_formatBalance(widget.balance)}'
+                        : '****',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ],
               ),
@@ -71,7 +76,10 @@ class _WalletBalanceCardState extends State<WalletBalanceCard> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onPrimary
+                      .withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -82,9 +90,9 @@ class _WalletBalanceCardState extends State<WalletBalanceCard> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Action buttons
           Row(
             children: [
@@ -93,7 +101,8 @@ class _WalletBalanceCardState extends State<WalletBalanceCard> {
                   text: 'Fund Wallet',
                   onPressed: widget.onFundWallet,
                   prefixIcon: Icons.add,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
               ),
               const SizedBox(width: 12),
@@ -101,12 +110,17 @@ class _WalletBalanceCardState extends State<WalletBalanceCard> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onPrimary
+                      .withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
                   icon: Icon(
-                    _isBalanceVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    _isBalanceVisible
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
                     color: Theme.of(context).colorScheme.onPrimary,
                     size: 20,
                   ),

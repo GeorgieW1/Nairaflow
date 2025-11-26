@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nairaflow/models/transaction.dart';
-import 'package:nairaflow/screens/transactions/transaction_receipt_screen.dart';
+import 'package:nairaflow_new/models/transaction.dart';
+import 'package:nairaflow_new/screens/transactions/transaction_receipt_screen.dart';
 
 class TransactionItem extends StatelessWidget {
   final Transaction transaction;
@@ -13,7 +13,7 @@ class TransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPositive = transaction.type == TransactionType.funding;
-    
+
     return InkWell(
       onTap: () {
         Navigator.of(context).push(
@@ -26,91 +26,97 @@ class TransactionItem extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Transaction icon
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: _getTransactionColor(transaction.type).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              _getTransactionIcon(transaction.type),
-              color: _getTransactionColor(transaction.type),
-              size: 20,
-            ),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
           ),
-          
-          const SizedBox(width: 16),
-          
-          // Transaction details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+        child: Row(
+          children: [
+            // Transaction icon
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: _getTransactionColor(transaction.type)
+                    .withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _getTransactionIcon(transaction.type),
+                color: _getTransactionColor(transaction.type),
+                size: 20,
+              ),
+            ),
+
+            const SizedBox(width: 16),
+
+            // Transaction details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _getTransactionTitle(),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _getTransactionSubtitle(),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.6),
+                        ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 16),
+
+            // Amount and status
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  _getTransactionTitle(),
+                  '${isPositive ? '+' : '-'}₦${transaction.amount.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
+                        color: isPositive
+                            ? Colors.green
+                            : Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  _getTransactionSubtitle(),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor().withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  overflow: TextOverflow.ellipsis,
+                  child: Text(
+                    _getStatusText(),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: _getStatusColor(),
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
                 ),
               ],
             ),
-          ),
-          
-          const SizedBox(width: 16),
-          
-          // Amount and status
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${isPositive ? '+' : '-'}₦${transaction.amount.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isPositive 
-                    ? Colors.green 
-                    : Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: _getStatusColor().withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _getStatusText(),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: _getStatusColor(),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

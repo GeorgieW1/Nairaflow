@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/models/data_plan.dart';
-import 'package:nairaflow/models/transaction.dart';
-import 'package:nairaflow/providers/auth_provider.dart';
-import 'package:nairaflow/providers/transaction_provider.dart';
-import 'package:nairaflow/services/data_service.dart';
-import 'package:nairaflow/widgets/custom_button.dart';
-import 'package:nairaflow/widgets/custom_text_field.dart';
-import 'package:nairaflow/widgets/network_selector.dart';
+import 'package:nairaflow_new/models/data_plan.dart';
+import 'package:nairaflow_new/models/transaction.dart';
+import 'package:nairaflow_new/providers/auth_provider.dart';
+import 'package:nairaflow_new/providers/transaction_provider.dart';
+import 'package:nairaflow_new/services/data_service.dart';
+import 'package:nairaflow_new/widgets/custom_button.dart';
+import 'package:nairaflow_new/widgets/custom_text_field.dart';
+import 'package:nairaflow_new/widgets/network_selector.dart';
 
 class DataScreen extends ConsumerStatefulWidget {
   const DataScreen({super.key});
@@ -20,17 +20,17 @@ class DataScreen extends ConsumerStatefulWidget {
 class _DataScreenState extends ConsumerState<DataScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
-  
+
   NetworkProvider _selectedNetwork = NetworkProvider.mtn;
-  DataPlan? _selectedDataPlan;  // ← Changed to DataPlan object
-  List<DataPlan> _dataPlans = [];  // ← Real plans from backend
+  DataPlan? _selectedDataPlan; // ← Changed to DataPlan object
+  List<DataPlan> _dataPlans = []; // ← Real plans from backend
   bool _isLoadingPlans = false;
   String? _plansError;
 
   @override
   void initState() {
     super.initState();
-    _loadDataPlans();  // ← Fetch plans when screen loads
+    _loadDataPlans(); // ← Fetch plans when screen loads
   }
 
   @override
@@ -51,7 +51,7 @@ class _DataScreenState extends ConsumerState<DataScreen> {
       setState(() {
         _dataPlans = plans;
         _isLoadingPlans = false;
-        _selectedDataPlan = null;  // Reset selection
+        _selectedDataPlan = null; // Reset selection
       });
     } catch (e) {
       setState(() {
@@ -73,7 +73,7 @@ class _DataScreenState extends ConsumerState<DataScreen> {
           final errorMessage = next.error!
               .replaceFirst('Exception: ', '')
               .replaceFirst('Data purchase failed: ', '');
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(errorMessage),
@@ -107,8 +107,8 @@ class _DataScreenState extends ConsumerState<DataScreen> {
         title: Text(
           'Buy Data',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         centerTitle: true,
       ),
@@ -125,7 +125,10 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -139,44 +142,44 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                       Text(
                         'Wallet Balance: ₦${user?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Network selection
                 Text(
                   'Select Network',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 NetworkSelector(
                   selectedNetwork: _selectedNetwork,
                   onNetworkChanged: (network) {
                     setState(() {
                       _selectedNetwork = network;
-                      _selectedDataPlan = null;  // Reset selection
+                      _selectedDataPlan = null; // Reset selection
                     });
-                    _loadDataPlans();  // ← Fetch new plans for selected network
+                    _loadDataPlans(); // ← Fetch new plans for selected network
                   },
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Phone number input
                 Text(
                   'Phone Number',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 CustomTextField(
@@ -188,25 +191,26 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter phone number';
                     }
-                    if (!RegExp(r'^[0-9+]+$').hasMatch(value.replaceAll(' ', ''))) {
+                    if (!RegExp(r'^[0-9+]+$')
+                        .hasMatch(value.replaceAll(' ', ''))) {
                       return 'Please enter a valid phone number';
                     }
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Data package selection
                 Text(
                   'Select Data Package',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Show loading state
                 if (_isLoadingPlans)
                   const Center(
@@ -236,10 +240,14 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                             children: [
                               Text(
                                 'Failed to load plans',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.error,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    ),
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -269,95 +277,122 @@ class _DataScreenState extends ConsumerState<DataScreen> {
                   )
                 else
                   ..._dataPlans.map((plan) {
-                  final isSelected = _selectedDataPlan?.variationCode == plan.variationCode;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedDataPlan = plan;  // ← Store full plan object
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
+                    final isSelected =
+                        _selectedDataPlan?.variationCode == plan.variationCode;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedDataPlan =
+                                plan; // ← Store full plan object
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
                             color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
-                            width: isSelected ? 2 : 1,
+                                ? Theme.of(context).colorScheme.primaryContainer
+                                : Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.2),
+                              width: isSelected ? 2 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .tertiary
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.wifi,
+                                  color: Theme.of(context).colorScheme.tertiary,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      plan.name,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: isSelected
+                                                ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                : null,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      plan.validity != null
+                                          ? 'Valid for ${plan.validity}'
+                                          : '',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.6),
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                '₦${plan.amount.toStringAsFixed(0)}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: isSelected
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                          : null,
+                                    ),
+                              ),
+                            ],
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.wifi,
-                                color: Theme.of(context).colorScheme.tertiary,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    plan.name,
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: isSelected
-                                        ? Theme.of(context).colorScheme.primary
-                                        : null,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    plan.validity != null ? 'Valid for ${plan.validity}' : '',
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              '₦${plan.amount.toStringAsFixed(0)}',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : null,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
-                  );
-                }),
-                
+                    );
+                  }),
+
                 const SizedBox(height: 32),
-                
+
                 // Purchase button
                 CustomButton(
                   text: 'Purchase Data',
-                  onPressed: (transactionState.isLoading || _selectedDataPlan == null) 
-                    ? null 
-                    : _handlePurchase,
+                  onPressed:
+                      (transactionState.isLoading || _selectedDataPlan == null)
+                          ? null
+                          : _handlePurchase,
                   isLoading: transactionState.isLoading,
                 ),
-                
+
                 const SizedBox(height: 20),
               ],
             ),
@@ -379,9 +414,9 @@ class _DataScreenState extends ConsumerState<DataScreen> {
         );
         return;
       }
-      
+
       final user = ref.read(authProvider).user;
-      
+
       if (_selectedDataPlan!.amount > (user?.walletBalance ?? 0)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -391,15 +426,15 @@ class _DataScreenState extends ConsumerState<DataScreen> {
         );
         return;
       }
-      
+
       // ✅ Send variation_code to backend!
       ref.read(transactionProvider.notifier).purchaseData(
-        phone: _phoneController.text.trim(),
-        network: _selectedNetwork,
-        amount: _selectedDataPlan!.amount,
-        dataPackage: _selectedDataPlan!.name,
-        variationCode: _selectedDataPlan!.variationCode,  // ← THE KEY!
-      );
+            phone: _phoneController.text.trim(),
+            network: _selectedNetwork,
+            amount: _selectedDataPlan!.amount,
+            dataPackage: _selectedDataPlan!.name,
+            variationCode: _selectedDataPlan!.variationCode, // ← THE KEY!
+          );
     }
   }
 
@@ -429,16 +464,19 @@ class _DataScreenState extends ConsumerState<DataScreen> {
             Text(
               'Data Purchase Successful!',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Your data package has been purchased successfully.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7),
+                  ),
               textAlign: TextAlign.center,
             ),
           ],

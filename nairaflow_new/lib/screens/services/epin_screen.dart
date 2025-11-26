@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/models/transaction.dart' as model;
-import 'package:nairaflow/providers/auth_provider.dart';
-import 'package:nairaflow/providers/transaction_provider.dart';
-import 'package:nairaflow/services/epin_service.dart'; // Service import
-import 'package:nairaflow/widgets/custom_button.dart';
-import 'package:nairaflow/widgets/custom_text_field.dart';
+import 'package:nairaflow_new/models/transaction.dart' as model;
+import 'package:nairaflow_new/providers/auth_provider.dart';
+import 'package:nairaflow_new/providers/transaction_provider.dart';
+import 'package:nairaflow_new/services/epin_service.dart'; // Service import
+import 'package:nairaflow_new/widgets/custom_button.dart';
+import 'package:nairaflow_new/widgets/custom_text_field.dart';
 
 class EpinScreen extends ConsumerStatefulWidget {
   const EpinScreen({super.key});
@@ -20,15 +20,15 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  
+
   String _selectedCategory = 'WAEC';
   String? _selectedPlanId;
   Map<String, dynamic>? _selectedPlan;
   int _quantity = 1;
-  
+
   bool _isLoadingPlans = false;
   List<dynamic> _availablePlans = [];
-  
+
   final List<Map<String, dynamic>> _categories = [
     {'id': 'WAEC', 'name': 'WAEC Result Checker', 'icon': Icons.school},
     {'id': 'NECO', 'name': 'NECO Result Token', 'icon': Icons.menu_book},
@@ -46,7 +46,7 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
   void initState() {
     super.initState();
     _loadPlans();
-    
+
     // Pre-fill email/phone from user profile
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = ref.read(authProvider).user;
@@ -142,11 +142,12 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
     if (confirmed != true) return;
 
     await ref.read(transactionProvider.notifier).purchaseEpin(
-      category: _selectedCategory,
-      quantity: _quantity,
-      amount: amount,
-      phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
-    );
+          category: _selectedCategory,
+          quantity: _quantity,
+          amount: amount,
+          phone:
+              _phoneController.text.isNotEmpty ? _phoneController.text : null,
+        );
 
     if (mounted) {
       final state = ref.read(transactionProvider);
@@ -163,8 +164,9 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
   }
 
   void _showSuccessDialog(model.Transaction transaction) {
-    final pins = (transaction as dynamic).metadata?['pins'] as List<dynamic>? ?? [];
-    
+    final pins =
+        (transaction as dynamic).metadata?['pins'] as List<dynamic>? ?? [];
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -176,7 +178,8 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('You have successfully purchased $_quantity ${_selectedCategory} PIN(s)'),
+              Text(
+                  'You have successfully purchased $_quantity $_selectedCategory PIN(s)'),
               const SizedBox(height: 16),
               if (pins.isNotEmpty) ...[
                 const Text(
@@ -188,38 +191,46 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
                   constraints: const BoxConstraints(maxHeight: 200),
                   child: SingleChildScrollView(
                     child: Column(
-                      children: pins.map((pin) => Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                pin.toString(),
-                                style: const TextStyle(
-                                  fontFamily: 'Monospace',
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
+                      children: pins
+                          .map((pin) => Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                      color:
+                                          Colors.grey.withValues(alpha: 0.3)),
                                 ),
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.copy, size: 20),
-                              onPressed: () {
-                                Clipboard.setData(ClipboardData(text: pin.toString()));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('PIN copied to clipboard')),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      )).toList(),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        pin.toString(),
+                                        style: const TextStyle(
+                                          fontFamily: 'Monospace',
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 1.2,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 20),
+                                      onPressed: () {
+                                        Clipboard.setData(ClipboardData(
+                                            text: pin.toString()));
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'PIN copied to clipboard')),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ))
+                          .toList(),
                     ),
                   ),
                 ),
@@ -276,17 +287,22 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
                   final category = _categories[index];
                   final isSelected = _selectedCategory == category['id'];
                   return GestureDetector(
-                    onTap: isLoading ? null : () => _onCategoryChanged(category['id']),
+                    onTap: isLoading
+                        ? null
+                        : () => _onCategoryChanged(category['id']),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isSelected 
-                          ? Theme.of(context).colorScheme.primary 
-                          : Theme.of(context).colorScheme.surface,
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isSelected
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .outline
+                                  .withValues(alpha: 0.2),
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -295,9 +311,9 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
                         children: [
                           Icon(
                             category['icon'],
-                            color: isSelected 
-                              ? Colors.white 
-                              : Theme.of(context).colorScheme.primary,
+                            color: isSelected
+                                ? Colors.white
+                                : Theme.of(context).colorScheme.primary,
                             size: 32,
                           ),
                           const SizedBox(height: 8),
@@ -305,9 +321,9 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
                             category['name'],
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: isSelected 
-                                ? Colors.white 
-                                : Theme.of(context).colorScheme.onSurface,
+                              color: isSelected
+                                  ? Colors.white
+                                  : Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -318,7 +334,7 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
                   );
                 },
               ),
-              
+
               const SizedBox(height: 24),
 
               // Plan Selection
@@ -344,12 +360,13 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
                 )
               else
                 DropdownButtonFormField<String>(
-                  value: _selectedPlanId,
+                  initialValue: _selectedPlanId,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                   ),
                   hint: const Text('Choose a package'),
                   items: _availablePlans.map((plan) {
@@ -368,22 +385,25 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
                             ),
                             Text(
                               '₦${plan['amount']}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
                       ),
                     );
                   }).toList(),
-                  onChanged: isLoading ? null : (value) {
-                    setState(() {
-                      _selectedPlanId = value;
-                      _selectedPlan = _availablePlans.firstWhere(
-                        (p) => p['id'] == value,
-                        orElse: () => null,
-                      );
-                    });
-                  },
+                  onChanged: isLoading
+                      ? null
+                      : (value) {
+                          setState(() {
+                            _selectedPlanId = value;
+                            _selectedPlan = _availablePlans.firstWhere(
+                              (p) => p['id'] == value,
+                              orElse: () => null,
+                            );
+                          });
+                        },
                 ),
 
               const SizedBox(height: 24),
@@ -410,13 +430,15 @@ class _EpinScreenState extends ConsumerState<EpinScreen> {
                         child: Text('$val'),
                       );
                     }).toList(),
-                    onChanged: isLoading ? null : (value) {
-                      if (value != null) {
-                        setState(() {
-                          _quantity = value;
-                        });
-                      }
-                    },
+                    onChanged: isLoading
+                        ? null
+                        : (value) {
+                            if (value != null) {
+                              setState(() {
+                                _quantity = value;
+                              });
+                            }
+                          },
                   ),
                 ),
               ),

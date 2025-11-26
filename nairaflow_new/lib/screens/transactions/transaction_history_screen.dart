@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nairaflow/providers/auth_provider.dart';
-import 'package:nairaflow/providers/transaction_provider.dart';
-import 'package:nairaflow/widgets/transaction_item.dart';
+import 'package:nairaflow_new/providers/auth_provider.dart';
+import 'package:nairaflow_new/providers/transaction_provider.dart';
+import 'package:nairaflow_new/widgets/transaction_item.dart';
 
 class TransactionHistoryScreen extends ConsumerWidget {
   const TransactionHistoryScreen({super.key});
@@ -19,8 +19,8 @@ class TransactionHistoryScreen extends ConsumerWidget {
         title: Text(
           'Transaction History',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -33,7 +33,8 @@ class TransactionHistoryScreen extends ConsumerWidget {
               await ref.read(transactionProvider.notifier).loadTransactions();
             }
           },
-          child: transactionState.isLoading && transactionState.transactions.isEmpty
+          child: transactionState.isLoading &&
+                  transactionState.transactions.isEmpty
               ? const Center(child: CircularProgressIndicator())
               : transactionState.transactions.isEmpty
                   ? _buildEmptyState(context)
@@ -41,7 +42,8 @@ class TransactionHistoryScreen extends ConsumerWidget {
                       padding: const EdgeInsets.all(20),
                       itemCount: transactionState.transactions.length,
                       itemBuilder: (context, index) {
-                        final transaction = transactionState.transactions[index];
+                        final transaction =
+                            transactionState.transactions[index];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
                           child: TransactionItem(transaction: transaction),
@@ -66,7 +68,10 @@ class TransactionHistoryScreen extends ConsumerWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer
+                    .withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -79,23 +84,26 @@ class TransactionHistoryScreen extends ConsumerWidget {
             Text(
               'No Transactions Yet',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 12),
             Text(
               'Your transaction history will appear here once you start making payments.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             Text(
               'Start by:',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: 16),
             Wrap(
@@ -103,15 +111,24 @@ class TransactionHistoryScreen extends ConsumerWidget {
               children: [
                 Chip(
                   label: const Text('📱 Buying Airtime'),
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withValues(alpha: 0.3),
                 ),
                 Chip(
                   label: const Text('📶 Purchasing Data'),
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withValues(alpha: 0.3),
                 ),
                 Chip(
                   label: const Text('⚡ Paying Bills'),
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withValues(alpha: 0.3),
                 ),
               ],
             ),

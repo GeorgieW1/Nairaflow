@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/providers/auth_provider.dart';
-import 'package:nairaflow/widgets/custom_button.dart';
+import 'package:nairaflow_new/providers/auth_provider.dart';
+import 'package:nairaflow_new/widgets/custom_button.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -20,8 +20,8 @@ class ProfileScreen extends ConsumerWidget {
         title: Text(
           'Profile',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -36,7 +36,10 @@ class ProfileScreen extends ConsumerWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
@@ -51,36 +54,43 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       child: Center(
                         child: Text(
-                          user?.name.isNotEmpty == true 
-                            ? user!.name[0].toUpperCase()
-                            : 'U',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          user?.name.isNotEmpty == true
+                              ? user!.name[0].toUpperCase()
+                              : 'U',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       user?.name ?? 'User',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       user?.email ?? '',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.7),
+                          ),
                     ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Profile information
               _buildInfoSection(
                 context,
@@ -108,14 +118,15 @@ class ProfileScreen extends ConsumerWidget {
                     context,
                     icon: Icons.account_balance_wallet_outlined,
                     label: 'Wallet Balance',
-                    value: '₦${user?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
+                    value:
+                        '₦${user?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
                     valueColor: Theme.of(context).colorScheme.primary,
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Account actions
               _buildInfoSection(
                 context,
@@ -158,18 +169,20 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Logout button
               CustomButton(
                 text: 'Logout',
-                onPressed: authState.isLoading ? null : () => _showLogoutDialog(context, ref),
+                onPressed: authState.isLoading
+                    ? null
+                    : () => _showLogoutDialog(context, ref),
                 isLoading: authState.isLoading,
                 isOutlined: true,
                 prefixIcon: Icons.logout,
               ),
-              
+
               const SizedBox(height: 20),
             ],
           ),
@@ -189,8 +202,8 @@ class ProfileScreen extends ConsumerWidget {
         Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 12),
         Container(
@@ -198,7 +211,10 @@ class ProfileScreen extends ConsumerWidget {
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.1),
             ),
           ),
           child: Column(
@@ -210,7 +226,10 @@ class ProfileScreen extends ConsumerWidget {
                   if (index < items.length - 1)
                     Divider(
                       height: 1,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.1),
                     ),
                 ],
               );
@@ -245,16 +264,19 @@ class ProfileScreen extends ConsumerWidget {
                 Text(
                   label,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
+                      ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   value,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: valueColor,
-                  ),
+                        fontWeight: FontWeight.w600,
+                        color: valueColor,
+                      ),
                 ),
               ],
             ),
@@ -279,8 +301,8 @@ class ProfileScreen extends ConsumerWidget {
       title: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
+              fontWeight: FontWeight.w600,
+            ),
       ),
       trailing: Icon(
         Icons.chevron_right,
@@ -306,10 +328,10 @@ class ProfileScreen extends ConsumerWidget {
             text: 'Logout',
             onPressed: () async {
               Navigator.of(context).pop(); // Close dialog
-              
+
               // IMMEDIATELY clear auth state to stop ALL API calls
               await ref.read(authProvider.notifier).logout();
-              
+
               // Navigate to login after clearing state
               if (context.mounted) {
                 GoRouter.of(context).go('/login');
