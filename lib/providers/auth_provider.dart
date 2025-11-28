@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nairaflow/models/user.dart';
-import 'package:nairaflow/services/auth_service.dart';
+import '../models/user.dart';
+import '../services/auth_service.dart';
 
 // Auth state
 class AuthState {
@@ -86,9 +86,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final user = await AuthService.signInWithGoogle();
       if (user != null) {
-        state = state.copyWith(user: user, isLoading: false, setErrorNull: true);
+        state =
+            state.copyWith(user: user, isLoading: false, setErrorNull: true);
       } else {
-        state = state.copyWith(isLoading: false, error: 'Google sign-in cancelled');
+        state =
+            state.copyWith(isLoading: false, error: 'Google sign-in cancelled');
       }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -98,14 +100,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     // Set user to null IMMEDIATELY to stop any ongoing requests
     // Don't set isLoading to prevent router redirect issues
-    state = state.copyWith(setUserNull: true, isLoading: false, setErrorNull: true);
+    state =
+        state.copyWith(setUserNull: true, isLoading: false, setErrorNull: true);
     try {
       await AuthService.logout();
       // User already null, just ensure state is clean
-      state = state.copyWith(setUserNull: true, isLoading: false, setErrorNull: true);
+      state = state.copyWith(
+          setUserNull: true, isLoading: false, setErrorNull: true);
     } catch (e) {
       // Even if logout fails, keep user as null (already logged out from UI perspective)
-      state = state.copyWith(setUserNull: true, isLoading: false, error: e.toString());
+      state = state.copyWith(
+          setUserNull: true, isLoading: false, error: e.toString());
     }
   }
 

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/models/transaction.dart';
-import 'package:nairaflow/providers/auth_provider.dart';
-import 'package:nairaflow/providers/transaction_provider.dart';
-import 'package:nairaflow/widgets/custom_button.dart';
-import 'package:nairaflow/widgets/custom_text_field.dart';
-import 'package:nairaflow/widgets/network_selector.dart';
+import 'package:nairaflow_new/models/transaction.dart';
+import 'package:nairaflow_new/providers/auth_provider.dart';
+import 'package:nairaflow_new/providers/transaction_provider.dart';
+import 'package:nairaflow_new/widgets/custom_button.dart';
+import 'package:nairaflow_new/widgets/custom_text_field.dart';
+import 'package:nairaflow_new/widgets/network_selector.dart';
 
 class AirtimeScreen extends ConsumerStatefulWidget {
   const AirtimeScreen({super.key});
@@ -19,7 +19,7 @@ class _AirtimeScreenState extends ConsumerState<AirtimeScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _amountController = TextEditingController();
-  
+
   NetworkProvider _selectedNetwork = NetworkProvider.mtn;
   final List<double> _quickAmounts = [100, 200, 500, 1000, 2000, 5000];
 
@@ -66,8 +66,8 @@ class _AirtimeScreenState extends ConsumerState<AirtimeScreen> {
         title: Text(
           'Buy Airtime',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         centerTitle: true,
       ),
@@ -84,7 +84,10 @@ class _AirtimeScreenState extends ConsumerState<AirtimeScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -95,28 +98,32 @@ class _AirtimeScreenState extends ConsumerState<AirtimeScreen> {
                         size: 20,
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        'Wallet Balance: ₦${user?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: Text(
+                          'Wallet Balance: ₦${user?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Network selection
                 Text(
                   'Select Network',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 NetworkSelector(
                   selectedNetwork: _selectedNetwork,
                   onNetworkChanged: (network) {
@@ -125,41 +132,41 @@ class _AirtimeScreenState extends ConsumerState<AirtimeScreen> {
                     });
                   },
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Phone number input
                 Text(
                   'Phone Number',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 CustomTextField(
                   controller: _phoneController,
                   hintText: 'Enter phone number',
                   keyboardType: TextInputType.phone,
-                  prefixIcon: Icons.phone_outlined,
+                  prefixIcon: Icons.phone,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter phone number';
                     }
-                    if (!RegExp(r'^[0-9+]+$').hasMatch(value.replaceAll(' ', ''))) {
-                      return 'Please enter a valid phone number';
+                    if (!RegExp(r'^0[789][01]\d{8}$').hasMatch(value)) {
+                      return 'Please enter a valid Nigerian phone number';
                     }
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Quick amount selection
                 Text(
                   'Quick Amounts',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -171,34 +178,44 @@ class _AirtimeScreenState extends ConsumerState<AirtimeScreen> {
                         _amountController.text = amount.toStringAsFixed(0);
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primaryContainer
+                              .withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
                           '₦${amount.toStringAsFixed(0)}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
                     );
                   }).toList(),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Amount input
                 Text(
                   'Amount',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 CustomTextField(
@@ -223,16 +240,17 @@ class _AirtimeScreenState extends ConsumerState<AirtimeScreen> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Purchase button
                 CustomButton(
                   text: 'Purchase Airtime',
-                  onPressed: transactionState.isLoading ? null : _handlePurchase,
+                  onPressed:
+                      transactionState.isLoading ? null : _handlePurchase,
                   isLoading: transactionState.isLoading,
                 ),
-                
+
                 const SizedBox(height: 20),
               ],
             ),
@@ -245,12 +263,12 @@ class _AirtimeScreenState extends ConsumerState<AirtimeScreen> {
   void _handlePurchase() {
     if (_formKey.currentState?.validate() ?? false) {
       final amount = double.parse(_amountController.text);
-      
+
       ref.read(transactionProvider.notifier).purchaseAirtime(
-        phone: _phoneController.text.trim(),
-        network: _selectedNetwork,
-        amount: amount,
-      );
+            phone: _phoneController.text.trim(),
+            network: _selectedNetwork,
+            amount: amount,
+          );
     }
   }
 
@@ -280,16 +298,19 @@ class _AirtimeScreenState extends ConsumerState<AirtimeScreen> {
             Text(
               'Airtime Purchase Successful!',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Your airtime has been purchased successfully.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7),
+                  ),
               textAlign: TextAlign.center,
             ),
           ],

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:nairaflow/services/api_service.dart';
+import 'api_service.dart';
 
 class EpinService {
   // Service for handling E-pin transactions

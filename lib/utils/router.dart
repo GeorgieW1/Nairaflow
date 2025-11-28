@@ -1,54 +1,54 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/providers/auth_provider.dart';
-import 'package:nairaflow/screens/auth/login_screen.dart';
-import 'package:nairaflow/screens/auth/register_screen.dart';
-import 'package:nairaflow/screens/home/dashboard_screen.dart';
-import 'package:nairaflow/screens/home/main_wrapper.dart';
-import 'package:nairaflow/screens/services/airtime_screen.dart';
-import 'package:nairaflow/screens/services/data_screen.dart';
-import 'package:nairaflow/screens/services/electricity_screen.dart';
-import 'package:nairaflow/screens/wallet/fund_wallet_screen.dart';
-import 'package:nairaflow/screens/transactions/transaction_history_screen.dart';
-import 'package:nairaflow/screens/profile/profile_screen.dart';
-import 'package:nairaflow/screens/onboarding/splash_screen.dart';
-import 'package:nairaflow/screens/services/tv_screen.dart';
-import 'package:nairaflow/screens/services/epin_screen.dart';
+import '../providers/auth_provider.dart';
+import '../screens/auth/login_screen.dart';
+import '../screens/auth/register_screen.dart';
+import '../screens/home/dashboard_screen.dart';
+import '../screens/home/main_wrapper.dart';
+import '../screens/services/airtime_screen.dart';
+import '../screens/services/data_screen.dart';
+import '../screens/services/electricity_screen.dart';
+import '../screens/wallet/fund_wallet_screen.dart';
+import '../screens/transactions/transaction_history_screen.dart';
+import '../screens/profile/profile_screen.dart';
+import '../screens/onboarding/splash_screen.dart';
+import '../screens/services/tv_screen.dart';
+import '../screens/services/epin_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
-  
+
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;
       final isLoading = authState.isLoading;
-      
+
       final location = state.matchedLocation;
-      
+
       // Show splash while checking auth status
       if (isLoading && location == '/splash') {
         return null;
       }
-      
+
       // If loading is done
       if (!isLoading) {
         // If on splash and auth is determined, redirect appropriately
         if (location == '/splash') {
           return isAuthenticated ? '/dashboard' : '/login';
         }
-        
+
         // If not authenticated and trying to access protected routes
         if (!isAuthenticated && !_isPublicRoute(location)) {
           return '/login';
         }
-        
+
         // If authenticated and trying to access auth routes
         if (isAuthenticated && _isAuthRoute(location)) {
           return '/dashboard';
         }
       }
-      
+
       return null;
     },
     routes: [
@@ -57,7 +57,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      
+
       // Auth routes
       GoRoute(
         path: '/login',
@@ -67,7 +67,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
-      
+
       // Main app with bottom navigation
       ShellRoute(
         builder: (context, state, child) => MainWrapper(child: child),
@@ -86,7 +86,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      
+
       // Service routes
       GoRoute(
         path: '/airtime',
@@ -108,7 +108,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/epin',
         builder: (context, state) => const EpinScreen(),
       ),
-      
+
       // Wallet routes
       GoRoute(
         path: '/fund-wallet',

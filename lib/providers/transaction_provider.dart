@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nairaflow/models/transaction.dart';
-import 'package:nairaflow/services/transaction_service.dart';
-import 'package:nairaflow/services/paystack_service.dart';
-import 'package:nairaflow/providers/auth_provider.dart';
+import '../models/transaction.dart';
+import '../services/transaction_service.dart';
+import '../services/paystack_service.dart';
+import 'auth_provider.dart';
 
 // Transaction state
 class TransactionState {
@@ -48,7 +48,7 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
         loadTransactions();
       }
     });
-    
+
     // Only load transactions on init if user is authenticated
     if (ref.read(authProvider).isAuthenticated) {
       loadTransactions();
@@ -62,7 +62,7 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
       state = state.copyWith(transactions: [], isLoading: false, error: null);
       return;
     }
-    
+
     state = state.copyWith(isLoading: true);
     try {
       final transactions = await TransactionService.getTransactionHistory();
@@ -88,13 +88,13 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
         network: network,
         amount: amount,
       );
-      
+
       state = state.copyWith(
         transactions: [transaction, ...state.transactions],
         isLoading: false,
         error: null,
       );
-      
+
       // Refresh user data to get updated wallet balance
       await ref.read(authProvider.notifier).refreshUser();
     } catch (e) {
@@ -107,7 +107,7 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
     required NetworkProvider network,
     required double amount,
     required String dataPackage,
-    String? variationCode,  // ← NEW: Pass variation_code
+    String? variationCode, // ← NEW: Pass variation_code
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -116,15 +116,15 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
         network: network,
         amount: amount,
         dataPackage: dataPackage,
-        variationCode: variationCode,  // ← Pass to service
+        variationCode: variationCode, // ← Pass to service
       );
-      
+
       state = state.copyWith(
         transactions: [transaction, ...state.transactions],
         isLoading: false,
         error: null,
       );
-      
+
       // Refresh user data to get updated wallet balance
       await ref.read(authProvider.notifier).refreshUser();
     } catch (e) {
@@ -148,13 +148,13 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
         amount: amount,
         phone: phone,
       );
-      
+
       state = state.copyWith(
         transactions: [transaction, ...state.transactions],
         isLoading: false,
         error: null,
       );
-      
+
       // Refresh user data to get updated wallet balance
       await ref.read(authProvider.notifier).refreshUser();
     } catch (e) {
@@ -176,13 +176,13 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
         amount: amount,
         phone: phone,
       );
-      
+
       state = state.copyWith(
         transactions: [transaction, ...state.transactions],
         isLoading: false,
         error: null,
       );
-      
+
       // Refresh user data to get updated wallet balance
       await ref.read(authProvider.notifier).refreshUser();
     } catch (e) {
@@ -204,13 +204,13 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
         disco: disco,
         meterType: meterType,
       );
-      
+
       state = state.copyWith(
         transactions: [transaction, ...state.transactions],
         isLoading: false,
         error: null,
       );
-      
+
       // Refresh user data to get updated wallet balance
       await ref.read(authProvider.notifier).refreshUser();
     } catch (e) {
@@ -231,7 +231,8 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
       final userEmail = user?.email ?? '';
 
       if (userEmail.isEmpty) {
-        state = state.copyWith(isLoading: false, error: '⚠️ Email is required for payment.');
+        state = state.copyWith(
+            isLoading: false, error: '⚠️ Email is required for payment.');
         return {
           'success': false,
           'message': '⚠️ Email is required for payment.',
@@ -249,10 +250,10 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
       if (result['success'] == true) {
         // Reload transactions to get the new funding transaction
         await loadTransactions();
-        
+
         // Refresh user data to get updated wallet balance
         await ref.read(authProvider.notifier).refreshUser();
-        
+
         state = state.copyWith(isLoading: false, error: null);
       } else {
         state = state.copyWith(
@@ -283,13 +284,13 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
         amount: amount,
         paymentMethod: paymentMethod,
       );
-      
+
       state = state.copyWith(
         transactions: [transaction, ...state.transactions],
         isLoading: false,
         error: null,
       );
-      
+
       // Refresh user data to get updated wallet balance
       await ref.read(authProvider.notifier).refreshUser();
     } catch (e) {
@@ -303,7 +304,8 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
 }
 
 // Providers
-final transactionProvider = StateNotifierProvider<TransactionNotifier, TransactionState>((ref) {
+final transactionProvider =
+    StateNotifierProvider<TransactionNotifier, TransactionState>((ref) {
   return TransactionNotifier(ref);
 });
 

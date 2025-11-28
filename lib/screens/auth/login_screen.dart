@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/providers/auth_provider.dart';
-import 'package:nairaflow/widgets/custom_button.dart';
-import 'package:nairaflow/widgets/custom_text_field.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/custom_button.dart';
+import '../../widgets/custom_text_field.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -69,7 +69,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
-                
+
                 // Logo and welcome
                 Center(
                   child: Column(
@@ -87,36 +87,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           color: Theme.of(context).colorScheme.onPrimary,
                         ),
                       ),
-                      
                       const SizedBox(height: 24),
-                      
                       Text(
                         'Welcome back!',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
-                      
                       const SizedBox(height: 8),
-                      
                       Text(
                         'Sign in to your NairaPay account',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 48),
-                
+
                 // Email field
                 Text(
                   'Email',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 CustomTextField(
@@ -128,21 +130,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                        .hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Password field
                 Text(
                   'Password',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 CustomTextField(
@@ -152,8 +155,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   prefixIcon: Icons.lock_outline,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                      _obscurePassword
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
                     ),
                     onPressed: () {
                       setState(() {
@@ -171,18 +179,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Error message display
                 if (authState.error != null)
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .error
+                          .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .error
+                            .withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -196,45 +210,61 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Expanded(
                           child: Text(
                             authState.error!,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                
+
                 if (authState.error != null) const SizedBox(height: 16),
-                
+
                 // Login button
                 CustomButton(
                   text: 'Sign In',
                   onPressed: authState.isLoading ? null : _handleLogin,
                   isLoading: authState.isLoading,
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Divider
                 Row(
                   children: [
-                    Expanded(child: Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2))),
+                    Expanded(
+                        child: Divider(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.2))),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         'OR',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
                       ),
                     ),
-                    Expanded(child: Divider(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2))),
+                    Expanded(
+                        child: Divider(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.2))),
                   ],
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Google sign in button
                 CustomButton(
                   text: 'Continue with Google',
@@ -242,9 +272,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   isOutlined: true,
                   prefixIcon: Icons.login,
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Sign up link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -252,22 +282,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Text(
                       "Don't have an account? ",
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6),
+                          ),
                     ),
                     GestureDetector(
                       onTap: () => context.go('/register'),
                       child: Text(
                         'Sign up',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 24),
               ],
             ),
@@ -280,9 +313,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void _handleLogin() {
     if (_formKey.currentState?.validate() ?? false) {
       ref.read(authProvider.notifier).loginWithEmailPassword(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+            _emailController.text.trim(),
+            _passwordController.text,
+          );
     }
   }
 

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:nairaflow/services/api_service.dart';
+import 'package:nairaflow_new/services/api_service.dart';
 
 class TVService {
   static Future<Map<String, dynamic>> verifySmartcard({
@@ -79,3 +79,4 @@ class TVService {
     return error.toString();
   }
 }
+

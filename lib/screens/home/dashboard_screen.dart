@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/providers/auth_provider.dart';
-import 'package:nairaflow/providers/transaction_provider.dart';
-import 'package:nairaflow/services/transaction_service.dart';
-import 'package:nairaflow/widgets/quick_action_card.dart';
-import 'package:nairaflow/widgets/transaction_item.dart';
-import 'package:nairaflow/widgets/wallet_balance_card.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/transaction_provider.dart';
+import '../../services/transaction_service.dart';
+import '../../widgets/quick_action_card.dart';
+import '../../widgets/transaction_item.dart';
+import '../../widgets/wallet_balance_card.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -56,16 +56,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         children: [
                           Text(
                             _getGreeting(),
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.7),
+                                ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             user?.name ?? 'User',
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -91,27 +100,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Wallet balance card
                 WalletBalanceCard(
                   balance: user?.walletBalance ?? 0.0,
                   onFundWallet: () => context.push('/fund-wallet'),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Quick actions
                 Text(
                   'Quick Actions',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 Row(
                   children: [
                     Expanded(
@@ -133,9 +142,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 Row(
                   children: [
                     Expanded(
@@ -157,7 +166,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 12),
 
                 Row(
@@ -181,7 +190,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 32),
 
                 // Recent Transactions Header
@@ -191,24 +200,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     Text(
                       'Recent Transactions',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     TextButton(
                       onPressed: () => context.go('/transactions'),
                       child: Text(
                         'See All',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 if (transactionState.isLoading)
                   const Center(child: CircularProgressIndicator())
                 else if (transactionState.recentTransactions.isEmpty)
@@ -220,7 +229,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       child: TransactionItem(transaction: transaction),
                     ),
                   ),
-                
+
                 const SizedBox(height: 20),
               ],
             ),
@@ -246,21 +255,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           Icon(
             Icons.receipt_long_outlined,
             size: 48,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
           ),
           const SizedBox(height: 16),
           Text(
             'No transactions yet',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             'Start by purchasing airtime or data',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5),
+                ),
             textAlign: TextAlign.center,
           ),
         ],

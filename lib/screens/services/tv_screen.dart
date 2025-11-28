@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/models/transaction.dart';
-import 'package:nairaflow/providers/transaction_provider.dart';
-import 'package:nairaflow/services/tv_service.dart';
-import 'package:nairaflow/widgets/custom_button.dart';
-import 'package:nairaflow/widgets/custom_text_field.dart';
+
+import 'package:nairaflow_new/providers/transaction_provider.dart';
+import 'package:nairaflow_new/services/tv_service.dart';
+import 'package:nairaflow_new/widgets/custom_button.dart';
+import 'package:nairaflow_new/widgets/custom_text_field.dart';
 
 class TVScreen extends ConsumerStatefulWidget {
   const TVScreen({super.key});
@@ -144,7 +144,15 @@ class _TVScreenState extends ConsumerState<TVScreen> {
       return;
     }
 
-    final amount = (_selectedBouquet!['amount'] as num).toDouble();
+    double amount;
+    try {
+      amount = double.parse(_selectedBouquet!['amount'].toString());
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid plan amount')),
+      );
+      return;
+    }
 
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
@@ -161,7 +169,16 @@ class _TVScreenState extends ConsumerState<TVScreen> {
             const SizedBox(height: 8),
             Text('Smartcard: ${_smartcardController.text}'),
             const SizedBox(height: 8),
-            Text('Customer: ${_customerDetails?['customerName'] ?? 'Unknown'}'),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Customer: ${_customerDetails?['customerName'] ?? 'Unknown'}',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             Text(
               'Amount: ₦${amount.toStringAsFixed(2)}',
@@ -378,19 +395,40 @@ class _TVScreenState extends ConsumerState<TVScreen> {
                         children: [
                           const Icon(Icons.check_circle, color: Colors.green, size: 20),
                           const SizedBox(width: 8),
-                          Text(
-                            'Customer Verified',
-                            style: TextStyle(
-                              color: Colors.green[700],
-                              fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Text(
+                              'Customer Verified',
+                              style: TextStyle(
+                                color: Colors.green[700],
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text('Name: ${_customerDetails!['customerName']}'),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Name: ${_customerDetails!['customerName']}',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                       if (_customerDetails!['currentBouquet'] != null)
-                        Text('Current Plan: ${_customerDetails!['currentBouquet']}'),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Current Plan: ${_customerDetails!['currentBouquet']}',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
@@ -421,23 +459,21 @@ class _TVScreenState extends ConsumerState<TVScreen> {
                   items: _availablePlans.map((plan) {
                     return DropdownMenuItem<String>(
                       value: plan['code'],
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width - 80, // Prevent overflow
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                plan['name'],
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              plan['name'],
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            Text(
-                              '₦${plan['amount']}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '₦${plan['amount']}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
                     );
                   }).toList(),
@@ -478,3 +514,4 @@ class _TVScreenState extends ConsumerState<TVScreen> {
     );
   }
 }
+

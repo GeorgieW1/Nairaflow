@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/providers/auth_provider.dart';
-import 'package:nairaflow/providers/transaction_provider.dart';
-import 'package:nairaflow/widgets/custom_button.dart';
-import 'package:nairaflow/widgets/custom_text_field.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/transaction_provider.dart';
+import '../../widgets/custom_button.dart';
+import '../../widgets/custom_text_field.dart';
 
 class FundWalletScreen extends ConsumerStatefulWidget {
   const FundWalletScreen({super.key});
@@ -16,10 +16,13 @@ class FundWalletScreen extends ConsumerStatefulWidget {
 class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
-  
+
   String _selectedPaymentMethod = 'Bank Transfer';
   final List<String> _paymentMethods = [
-    'Bank Transfer', 'Card Payment', 'USSD', 'Mobile Banking'
+    'Bank Transfer',
+    'Card Payment',
+    'USSD',
+    'Mobile Banking'
   ];
   final List<double> _quickAmounts = [1000, 2000, 5000, 10000, 20000, 50000];
 
@@ -65,8 +68,8 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
         title: Text(
           'Fund Wallet',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         centerTitle: true,
       ),
@@ -83,7 +86,10 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -97,33 +103,39 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                       Text(
                         'Current Balance',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                        ),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.7),
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '₦${user?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Payment method selection
                 Text(
                   'Payment Method',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 ..._paymentMethods.map((method) {
                   final isSelected = method == _selectedPaymentMethod;
                   return Padding(
@@ -138,13 +150,16 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: isSelected
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : Theme.of(context).colorScheme.surface,
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.2),
                             width: isSelected ? 2 : 1,
                           ),
                         ),
@@ -154,7 +169,8 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: _getPaymentMethodColor(method).withValues(alpha: 0.1),
+                                color: _getPaymentMethodColor(method)
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
@@ -167,12 +183,17 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                             Expanded(
                               child: Text(
                                 method,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: isSelected
-                                    ? Theme.of(context).colorScheme.primary
-                                    : null,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .primary
+                                          : null,
+                                    ),
                               ),
                             ),
                             if (isSelected)
@@ -187,15 +208,15 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                     ),
                   );
                 }),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Quick amount selection
                 Text(
                   'Quick Amounts',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -207,34 +228,44 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                         _amountController.text = amount.toStringAsFixed(0);
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primaryContainer
+                              .withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
                           '₦${amount.toStringAsFixed(0)}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
                     );
                   }).toList(),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Amount input
                 Text(
                   'Enter Amount',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 CustomTextField(
@@ -259,18 +290,18 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Fund wallet button
                 CustomButton(
                   text: 'Fund Wallet',
                   onPressed: transactionState.isLoading ? null : _handleFunding,
                   isLoading: transactionState.isLoading,
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Test mode info banner
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -294,10 +325,13 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                           const SizedBox(width: 8),
                           Text(
                             '🧪 Test Mode - Paystack',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelLarge
+                                ?.copyWith(
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                         ],
                       ),
@@ -305,8 +339,8 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                       Text(
                         'Use these test card details:',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Container(
@@ -320,23 +354,32 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                           children: [
                             Text(
                               'Card: 5060 6666 6666 6666 6666',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontFamily: 'monospace',
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    fontFamily: 'monospace',
+                                  ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Expiry: 12/25 | CVV: 123',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontFamily: 'monospace',
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    fontFamily: 'monospace',
+                                  ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'PIN: 1234 | OTP: 123456',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontFamily: 'monospace',
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    fontFamily: 'monospace',
+                                  ),
                             ),
                           ],
                         ),
@@ -347,15 +390,24 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                           Icon(
                             Icons.lock_outline,
                             size: 14,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6),
                           ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               'Secured by Paystack',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.6),
+                                  ),
                             ),
                           ),
                         ],
@@ -404,18 +456,19 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
   Future<void> _handleFunding() async {
     if (_formKey.currentState?.validate() ?? false) {
       final amount = double.parse(_amountController.text);
-      
+
       // Use Paystack for payment
-      final result = await ref.read(transactionProvider.notifier).fundWalletWithPaystack(
-        context: context,
-        amount: amount,
-        paymentMethod: _selectedPaymentMethod,
-      );
-      
+      final result =
+          await ref.read(transactionProvider.notifier).fundWalletWithPaystack(
+                context: context,
+                amount: amount,
+                paymentMethod: _selectedPaymentMethod,
+              );
+
       // Show success dialog if payment was successful
       if (result['success'] == true && mounted) {
-        final newBalance = result['newBalance'] != null 
-            ? (result['newBalance'] as num).toDouble() 
+        final newBalance = result['newBalance'] != null
+            ? (result['newBalance'] as num).toDouble()
             : null;
         _showSuccessDialog(newBalance);
       }
@@ -448,8 +501,8 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
             Text(
               'Wallet Funded Successfully!',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -457,17 +510,20 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
               Text(
                 'New Balance: ₦${newBalance.toStringAsFixed(2)}',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                 textAlign: TextAlign.center,
               ),
             const SizedBox(height: 8),
             Text(
               'Your wallet has been funded successfully.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7),
+                  ),
               textAlign: TextAlign.center,
             ),
           ],

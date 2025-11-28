@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow/providers/auth_provider.dart';
-import 'package:nairaflow/providers/transaction_provider.dart';
-import 'package:nairaflow/widgets/custom_button.dart';
-import 'package:nairaflow/widgets/custom_text_field.dart';
+import 'package:nairaflow_new/providers/auth_provider.dart';
+import 'package:nairaflow_new/providers/transaction_provider.dart';
+import 'package:nairaflow_new/services/electricity_service.dart';
+import 'package:nairaflow_new/widgets/custom_button.dart';
+import 'package:nairaflow_new/widgets/custom_text_field.dart';
 
 class ElectricityScreen extends ConsumerStatefulWidget {
   const ElectricityScreen({super.key});
@@ -17,29 +18,29 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
   final _formKey = GlobalKey<FormState>();
   final _meterNumberController = TextEditingController();
   final _amountController = TextEditingController();
-  
-  String _selectedDisco = 'IKEDC'; // Default to first code
-  String _selectedMeterType = 'prepaid';
-  bool _isVerifying = false;
-  bool _isMeterVerified = false;
 
-  // Updated DisCo list with backend codes directly
+  String _selectedDisco = 'AEDC';
+  String _selectedMeterType = 'prepaid';
+
+  bool _isMeterVerified = false;
+  bool _isVerifying = false;
+  Map<String, dynamic>? _customerDetails;
+
   final List<Map<String, String>> _discos = [
-    {'name': 'Ikeja Electric (IKEDC)', 'code': 'IKEDC'},
-    {'name': 'Eko Electric (EKEDC)', 'code': 'EKEDC'},
-    {'name': 'Kano Electric (KEDCO)', 'code': 'KEDCO'},
-    {'name': 'Abuja Electric (AEDC)', 'code': 'AEDC'},
-    {'name': 'Port Harcourt (PHED)', 'code': 'PHED'},
-    {'name': 'Benin (BEDC)', 'code': 'BEDC'},
-    {'name': 'Enugu (EEDC)', 'code': 'EEDC'},
-    {'name': 'Kaduna (KAEDC)', 'code': 'KAEDCO'},
-    {'name': 'Ibadan (IBEDC)', 'code': 'IBEDC'},
-    {'name': 'Jos (JED)', 'code': 'JED'},
-    {'name': 'Yola (YEDC)', 'code': 'YEDC'}
+    {'code': 'AEDC', 'name': 'Abuja Electricity'},
+    {'code': 'EKEDC', 'name': 'Eko Electricity'},
+    {'code': 'KEDCO', 'name': 'Kano Electricity'},
+    {'code': 'PHED', 'name': 'Port Harcourt Electricity'},
+    {'code': 'JED', 'name': 'Jos Electricity'},
+    {'code': 'IBEDC', 'name': 'Ibadan Electricity'},
+    {'code': 'KAEDCO', 'name': 'Kaduna Electricity'},
+    {'code': 'EEDC', 'name': 'Enugu Electricity'},
+    {'code': 'BEDC', 'name': 'Benin Electricity'},
+    {'code': 'YEDC', 'name': 'Yola Electricity'},
   ];
 
   final List<String> _meterTypes = ['prepaid', 'postpaid'];
-  final List<double> _quickAmounts = [1000, 2000, 3000, 5000, 10000, 20000];
+  final List<double> _quickAmounts = [1000, 2000, 5000, 10000, 20000, 50000];
 
   @override
   void dispose() {
@@ -49,36 +50,43 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
   }
 
   Future<void> _verifyMeter() async {
-    // Allow 11-16 digits, with optional dashes or slashes
-    if (!RegExp(r'^[0-9\-\/]{11,16}$').hasMatch(_meterNumberController.text)) {
+    if (_meterNumberController.text.length < 10) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please enter a valid 11-16 digit meter number'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
+        const SnackBar(content: Text('Please enter a valid meter number')),
       );
       return;
     }
 
     setState(() {
       _isVerifying = true;
+      _customerDetails = null;
+      _isMeterVerified = false;
     });
 
-    // Simulate API call for verification
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (mounted) {
-      setState(() {
-        _isVerifying = false;
-        _isMeterVerified = true;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Meter verified successfully!'),
-          backgroundColor: Colors.green,
-        ),
+    try {
+      final details = await ElectricityService.verifyMeter(
+        meterNumber: _meterNumberController.text,
+        disco: _selectedDisco,
+        meterType: _selectedMeterType,
       );
+
+      if (mounted) {
+        setState(() {
+          _customerDetails = details;
+          _isMeterVerified = true;
+          _isVerifying = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isVerifying = false;
+          _isMeterVerified = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Verification failed: $e')),
+        );
+      }
     }
   }
 
@@ -121,8 +129,8 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
         title: Text(
           'Pay Electricity',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         centerTitle: true,
       ),
@@ -139,7 +147,10 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -150,24 +161,28 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                         size: 20,
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        'Wallet Balance: ₦${user?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: Text(
+                          'Wallet Balance: ₦${user?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Distribution company selection
                 Text(
                   'Distribution Company',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -176,7 +191,10 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.2),
                     ),
                   ),
                   child: DropdownButtonHideUnderline(
@@ -197,22 +215,23 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                         if (value != null) {
                           setState(() {
                             _selectedDisco = value;
-                            _isMeterVerified = false; // Reset verification on change
+                            _isMeterVerified = false;
+                            _customerDetails = null;
                           });
                         }
                       },
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Meter type selection
                 Text(
                   'Meter Type',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -221,7 +240,10 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.2),
                     ),
                   ),
                   child: DropdownButtonHideUnderline(
@@ -247,15 +269,15 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Meter number input
                 Text(
                   'Meter Number',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -271,6 +293,7 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                           if (_isMeterVerified) {
                             setState(() {
                               _isMeterVerified = false;
+                              _customerDetails = null;
                             });
                           }
                         },
@@ -278,7 +301,6 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Please enter meter number';
                           }
-                          // Allow 11-16 digits, with optional dashes or slashes
                           if (!RegExp(r'^[0-9\-\/]{11,16}$').hasMatch(value)) {
                             return '11-16 digits required';
                           }
@@ -288,14 +310,17 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                     ),
                     const SizedBox(width: 12),
                     SizedBox(
-                      height: 56, // Match text field height
+                      height: 56,
                       child: ElevatedButton(
-                        onPressed: _isVerifying || _meterNumberController.text.length < 10 
-                            ? null 
+                        onPressed: _isVerifying ||
+                                _meterNumberController.text.length < 10
+                            ? null
                             : _verifyMeter,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.secondary,
-                          foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.secondary,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onSecondary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -304,39 +329,82 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Text('Verify'),
                       ),
                     ),
                   ],
                 ),
-                if (_isMeterVerified)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0, left: 4),
-                    child: Row(
+
+                // Verification Result
+                if (_customerDetails != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: Colors.green.withValues(alpha: 0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.check_circle, color: Colors.green, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Meter verified',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          children: [
+                            const Icon(Icons.check_circle,
+                                color: Colors.green, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Meter Verified',
+                                style: TextStyle(
+                                  color: Colors.green[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Name: ${_customerDetails!['customerName'] ?? _customerDetails!['name'] ?? 'Unknown'}',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_customerDetails!['address'] != null)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Address: ${_customerDetails!['address']}',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
-                
+                ],
+
                 const SizedBox(height: 24),
-                
+
                 // Quick amount selection
                 Text(
                   'Quick Amounts',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -348,34 +416,44 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                         _amountController.text = amount.toStringAsFixed(0);
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primaryContainer
+                              .withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
                           '₦${amount.toStringAsFixed(0)}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
                     );
                   }).toList(),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Amount input
                 Text(
                   'Amount',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 CustomTextField(
@@ -400,16 +478,16 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                     return null;
                   },
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Pay button
                 CustomButton(
                   text: 'Pay Electricity Bill',
                   onPressed: transactionState.isLoading ? null : _handlePayment,
                   isLoading: transactionState.isLoading,
                 ),
-                
+
                 const SizedBox(height: 20),
               ],
             ),
@@ -437,13 +515,13 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
       }
 
       final amount = double.parse(_amountController.text);
-      
+
       ref.read(transactionProvider.notifier).payElectricity(
-        meterNumber: _meterNumberController.text.trim(),
-        amount: amount,
-        disco: _selectedDisco,
-        meterType: _selectedMeterType,
-      );
+            meterNumber: _meterNumberController.text.trim(),
+            amount: amount,
+            disco: _selectedDisco,
+            meterType: _selectedMeterType,
+          );
     }
   }
 
@@ -473,33 +551,36 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
             Text(
               'Payment Successful!',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               '₦${amount.toStringAsFixed(2)}',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               '$provider - $meterNumber',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Your electricity bill has been paid successfully.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7),
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
