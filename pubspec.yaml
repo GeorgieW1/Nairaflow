@@ -1,4 +1,4 @@
-name: nairaflow
+name: nairaflow_new
 description: "NairaPay is a robust mobile payment app for Nigeria, offering seamless airtime, data, bill payments, and secure wallet management, all wrapped in a sleek, user-friendly interface."
 publish_to: "none"
 version: 1.0.0
@@ -19,13 +19,9 @@ dependencies:
   firebase_core: '>=2.21.1'
   firebase_auth: '>=5.3.3'
   google_sign_in: '>=6.2.1'
-  # ✔ HTTP client for API calls
   http: ^1.1.2
-  # ✔ WebView for inline Paystack payment
   webview_flutter: ^4.4.2
-  # ✔ Date formatting for receipts
   intl: ^0.19.0
-  # ✔ Share receipts functionality
   share_plus: ^7.2.2
 
 dev_dependencies:
