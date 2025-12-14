@@ -9,6 +9,7 @@ import '../../services/data_service.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/network_selector.dart';
+import '../../widgets/service_ui_components.dart';
 
 class DataScreen extends ConsumerStatefulWidget {
   const DataScreen({super.key});
@@ -22,15 +23,18 @@ class _DataScreenState extends ConsumerState<DataScreen> {
   final _phoneController = TextEditingController();
 
   NetworkProvider _selectedNetwork = NetworkProvider.mtn;
-  DataPlan? _selectedDataPlan; // ← Changed to DataPlan object
-  List<DataPlan> _dataPlans = []; // ← Real plans from backend
+  DataPlan? _selectedDataPlan;
+  List<DataPlan> _allDataPlans = [];
   bool _isLoadingPlans = false;
   String? _plansError;
+
+  int _selectedTabIndex = 0;
+  final List<String> _tabs = ['HOT', 'Daily', 'Weekly', 'Monthly', 'Always-On'];
 
   @override
   void initState() {
     super.initState();
-    _loadDataPlans(); // ← Fetch plans when screen loads
+    _loadDataPlans();
   }
 
   @override
@@ -39,7 +43,6 @@ class _DataScreenState extends ConsumerState<DataScreen> {
     super.dispose();
   }
 
-  /// ✅ STEP 1: Fetch data plans from backend
   Future<void> _loadDataPlans() async {
     setState(() {
       _isLoadingPlans = true;
@@ -49,9 +52,9 @@ class _DataScreenState extends ConsumerState<DataScreen> {
     try {
       final plans = await DataService.fetchDataPlans(_selectedNetwork);
       setState(() {
-        _dataPlans = plans;
+        _allDataPlans = plans;
         _isLoadingPlans = false;
-        _selectedDataPlan = null; // Reset selection
+        _selectedDataPlan = null;
       });
     } catch (e) {
       setState(() {
@@ -59,6 +62,47 @@ class _DataScreenState extends ConsumerState<DataScreen> {
         _plansError = e.toString().replaceFirst('Exception: ', '');
       });
     }
+  }
+
+  List<DataPlan> _getFilteredPlans() {
+    if (_allDataPlans.isEmpty) return [];
+
+    final category = _tabs[_selectedTabIndex];
+    
+    return _allDataPlans.where((plan) {
+      // Normalize strings for comparison
+      final name = plan.name.toLowerCase();
+      // Use validity if available, otherwise fallback to name which often contains duration
+      final validity = (plan.validity ?? name).toLowerCase();
+      
+      switch (category) {
+        case 'HOT':
+          // Heuristic: Cheap plans (< 500) or specifically named
+          return plan.amount <= 500 || name.contains('hot') || name.contains('special') || name.contains('promo');
+        case 'Daily':
+          // Matches "1 Day", "2 Days", "24 hours"
+          return (validity.contains('day') && !validity.contains('30 day') && !validity.contains('7 day')) || 
+                 validity.contains('24 hours') || 
+                 validity.contains('daily');
+        case 'Weekly':
+          // Matches "7 Days", "1 Week", "Weekly"
+          return validity.contains('7 day') || validity.contains('week');
+        case 'Monthly':
+          // Matches "30 Days", "Month", "Monthly"
+          return validity.contains('30 day') || validity.contains('month');
+        case 'Always-On':
+          // Plans that don't fit the standard daily/weekly/monthly buckets or are long-term
+          return !validity.contains('1 day') && 
+                 !validity.contains('2 day') && 
+                 !validity.contains('daily') &&
+                 !validity.contains('7 day') && 
+                 !validity.contains('week') && 
+                 !validity.contains('30 day') && 
+                 !validity.contains('month');
+        default:
+          return true;
+      }
+    }).toList();
   }
 
   @override
@@ -69,7 +113,6 @@ class _DataScreenState extends ConsumerState<DataScreen> {
     ref.listen<TransactionState>(transactionProvider, (previous, next) {
       if (previous?.isLoading == true && next.isLoading == false) {
         if (next.error != null) {
-          // Clean up error message
           final errorMessage = next.error!
               .replaceFirst('Exception: ', '')
               .replaceFirst('Data purchase failed: ', '');
@@ -78,12 +121,6 @@ class _DataScreenState extends ConsumerState<DataScreen> {
             SnackBar(
               content: Text(errorMessage),
               backgroundColor: Theme.of(context).colorScheme.error,
-              duration: const Duration(seconds: 5), // Show longer
-              action: SnackBarAction(
-                label: 'OK',
-                textColor: Colors.white,
-                onPressed: () {},
-              ),
             ),
           );
         } else {
@@ -92,331 +129,188 @@ class _DataScreenState extends ConsumerState<DataScreen> {
       }
     });
 
+    final filteredPlans = _getFilteredPlans();
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Buy Data',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
+        title: const Text('Mobile Data'),
         centerTitle: true,
+        actions: [
+          TextButton(
+            onPressed: () => context.push('/transactions'),
+            child: const Text('History'),
+          ),
+        ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Wallet balance info
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primaryContainer
-                        .withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
+        child: Column(
+          children: [
+            // Top Section (Wallet & Network)
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.account_balance_wallet_outlined,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Wallet Balance: ₦${user?.walletBalance.toStringAsFixed(2) ?? '0.00'}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                    ],
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Network Selector (Using existing widget but could be tabs if preferred)
+                  NetworkSelector(
+                    selectedNetwork: _selectedNetwork,
+                    onNetworkChanged: (network) {
+                      setState(() {
+                        _selectedNetwork = network;
+                        _selectedDataPlan = null;
+                      });
+                      _loadDataPlans();
+                    },
                   ),
-                ),
+                  
+                  const SizedBox(height: 16),
 
-                const SizedBox(height: 24),
-
-                // Network selection
-                Text(
-                  'Select Network',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-
-                const SizedBox(height: 12),
-
-                NetworkSelector(
-                  selectedNetwork: _selectedNetwork,
-                  onNetworkChanged: (network) {
-                    setState(() {
-                      _selectedNetwork = network;
-                      _selectedDataPlan = null; // Reset selection
-                    });
-                    _loadDataPlans(); // ← Fetch new plans for selected network
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                // Phone number input
-                Text(
-                  'Phone Number',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                const SizedBox(height: 8),
-                CustomTextField(
-                  controller: _phoneController,
-                  hintText: 'Enter phone number',
-                  keyboardType: TextInputType.phone,
-                  prefixIcon: Icons.phone_outlined,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter phone number';
-                    }
-                    if (!RegExp(r'^[0-9+]+$')
-                        .hasMatch(value.replaceAll(' ', ''))) {
-                      return 'Please enter a valid phone number';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                // Data package selection
-                Text(
-                  'Select Data Package',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // Show loading state
-                if (_isLoadingPlans)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: CircularProgressIndicator(),
+                  // Phone Input
+                  Form(
+                    key: _formKey,
+                    child: CustomTextField(
+                      controller: _phoneController,
+                      hintText: 'Enter phone number',
+                      keyboardType: TextInputType.phone,
+                      prefixIcon: Icons.phone_android,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Required';
+                        }
+                        return null;
+                      },
                     ),
-                  )
-                // Show error state
-                else if (_plansError != null)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.errorContainer,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Failed to load plans',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _plansError!,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.refresh),
-                          onPressed: _loadDataPlans,
-                        ),
-                      ],
-                    ),
-                  )
-                // Show data plans
-                else if (_dataPlans.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: Text(
-                        'No data plans available',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ),
-                  )
-                else
-                  ..._dataPlans.map((plan) {
-                    final isSelected =
-                        _selectedDataPlan?.variationCode == plan.variationCode;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedDataPlan =
-                                plan; // ← Store full plan object
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.primaryContainer
-                                : Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.2),
-                              width: isSelected ? 2 : 1,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .tertiary
-                                      .withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.wifi,
-                                  color: Theme.of(context).colorScheme.tertiary,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      plan.name,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            color: isSelected
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                : null,
-                                          ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      plan.validity != null
-                                          ? 'Valid for ${plan.validity}'
-                                          : '',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withValues(alpha: 0.6),
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                '₦${plan.amount.toStringAsFixed(0)}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: isSelected
-                                          ? Theme.of(context)
-                                              .colorScheme
-                                              .primary
-                                          : null,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
+                  ),
 
-                const SizedBox(height: 32),
-
-                // Purchase button
-                CustomButton(
-                  text: 'Purchase Data',
-                  onPressed:
-                      (transactionState.isLoading || _selectedDataPlan == null)
-                          ? null
-                          : _handlePurchase,
-                  isLoading: transactionState.isLoading,
-                ),
-
-                const SizedBox(height: 20),
-              ],
+                  // Tabs
+                  ServiceTabController(
+                    tabs: _tabs,
+                    selectedIndex: _selectedTabIndex,
+                    onTap: (index) {
+                      setState(() {
+                        _selectedTabIndex = index;
+                        _selectedDataPlan = null;
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
+
+            // Content
+            Expanded(
+              child: _isLoadingPlans
+                  ? const Center(child: CircularProgressIndicator())
+                  : _plansError != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(_plansError!, style: const TextStyle(color: Colors.red)),
+                              TextButton(
+                                onPressed: _loadDataPlans,
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : filteredPlans.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No ${_tabs[_selectedTabIndex]} plans available',
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                            )
+                          : GridView.builder(
+                              padding: const EdgeInsets.all(20),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                childAspectRatio: 0.75,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                              ),
+                              itemCount: filteredPlans.length,
+                              itemBuilder: (context, index) {
+                                final plan = filteredPlans[index];
+                                final isSelected = _selectedDataPlan?.variationCode == plan.variationCode;
+                                
+                                return PlanCard(
+                                  title: _formatPlanName(plan.name),
+                                  subtitle: plan.validity ?? _extractValidity(plan.name),
+                                  amount: plan.amount,
+                                  isSelected: isSelected,
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedDataPlan = plan;
+                                    });
+                                  },
+                                );
+                              },
+                            ),
+            ),
+
+            // Bottom Action Bar
+            if (_selectedDataPlan != null)
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: CustomButton(
+                    text: 'Pay ₦${_selectedDataPlan!.amount.toStringAsFixed(0)}',
+                    onPressed: transactionState.isLoading ? null : _handlePurchase,
+                    isLoading: transactionState.isLoading,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
 
-  /// ✅ STEP 3: Purchase with variation_code
+  String _formatPlanName(String name) {
+    // Helper to clean up plan names if needed, e.g., "1.5GB Data" -> "1.5GB"
+    // For now, just return the name or split it if it's too long
+    return name.split(' - ').first; 
+  }
+
+  String _extractValidity(String name) {
+    // Try to find patterns like "1 Day", "30 Days", "Weekly", "Monthly" in the name
+    final lowerName = name.toLowerCase();
+    if (lowerName.contains('1 day')) return '1 Day';
+    if (lowerName.contains('2 day')) return '2 Days';
+    if (lowerName.contains('7 day') || lowerName.contains('weekly')) return '7 Days';
+    if (lowerName.contains('30 day') || lowerName.contains('monthly')) return '30 Days';
+    if (lowerName.contains('3 month')) return '3 Months';
+    return 'Unknown';
+  }
+
   void _handlePurchase() {
     if (_formKey.currentState?.validate() ?? false) {
-      if (_selectedDataPlan == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Please select a data package'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-        return;
-      }
+      if (_selectedDataPlan == null) return;
 
       final user = ref.read(authProvider).user;
-
       if (_selectedDataPlan!.amount > (user?.walletBalance ?? 0)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -427,13 +321,12 @@ class _DataScreenState extends ConsumerState<DataScreen> {
         return;
       }
 
-      // ✅ Send variation_code to backend!
       ref.read(transactionProvider.notifier).purchaseData(
             phone: _phoneController.text.trim(),
             network: _selectedNetwork,
             amount: _selectedDataPlan!.amount,
             dataPackage: _selectedDataPlan!.name,
-            variationCode: _selectedDataPlan!.variationCode, // ← THE KEY!
+            variationCode: _selectedDataPlan!.variationCode,
           );
     }
   }
@@ -447,47 +340,23 @@ class _DataScreenState extends ConsumerState<DataScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 32,
-              ),
-            ),
+            const Icon(Icons.check_circle, color: Colors.green, size: 48),
             const SizedBox(height: 16),
-            Text(
-              'Data Purchase Successful!',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-              textAlign: TextAlign.center,
+            const Text(
+              'Successful!',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Your data package has been purchased successfully.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.7),
-                  ),
-              textAlign: TextAlign.center,
-            ),
+            const Text('Your data purchase was successful.'),
           ],
         ),
         actions: [
-          CustomButton(
-            text: 'Done',
+          TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.pop(context);
               context.pop();
             },
+            child: const Text('Done'),
           ),
         ],
       ),

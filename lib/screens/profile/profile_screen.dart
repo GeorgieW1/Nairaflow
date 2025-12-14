@@ -132,6 +132,15 @@ class ProfileScreen extends ConsumerWidget {
                 context,
                 title: 'Account Actions',
                 items: [
+                  // Show Verify Email if not verified
+                  if (user != null && !user.isEmailVerified)
+                    _buildActionItem(
+                      context,
+                      icon: Icons.mark_email_unread,
+                      label: 'Verify Email',
+                      onTap: () => context.push('/verify-email'),
+                      showWarning: true,
+                    ),
                   _buildActionItem(
                     context,
                     icon: Icons.security,
@@ -291,23 +300,37 @@ class ProfileScreen extends ConsumerWidget {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    bool showWarning = false,
   }) {
     return ListTile(
       leading: Icon(
         icon,
-        color: Theme.of(context).colorScheme.primary,
+        color: showWarning ? Colors.orange : Theme.of(context).colorScheme.primary,
         size: 20,
       ),
       title: Text(
         label,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
+              color: showWarning ? Colors.deepOrange : null,
             ),
       ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-      ),
+      trailing: showWarning
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Required',
+                style: TextStyle(color: Colors.deepOrange, fontSize: 10, fontWeight: FontWeight.bold),
+              ),
+            )
+          : Icon(
+              Icons.chevron_right,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+            ),
       onTap: onTap,
     );
   }

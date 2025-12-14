@@ -4,6 +4,7 @@ class User {
   final String email;
   final String phone;
   final double walletBalance;
+  final bool isEmailVerified;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -13,6 +14,7 @@ class User {
     required this.email,
     required this.phone,
     required this.walletBalance,
+    this.isEmailVerified = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -24,6 +26,7 @@ class User {
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
       walletBalance: (json['walletBalance'] ?? 0).toDouble(),
+      isEmailVerified: json['isEmailVerified'] ?? false,
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
     );
@@ -36,6 +39,7 @@ class User {
       'email': email,
       'phone': phone,
       'walletBalance': walletBalance,
+      'isEmailVerified': isEmailVerified,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -47,6 +51,7 @@ class User {
     String? email,
     String? phone,
     double? walletBalance,
+    bool? isEmailVerified,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -56,6 +61,7 @@ class User {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       walletBalance: walletBalance ?? this.walletBalance,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

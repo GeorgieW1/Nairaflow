@@ -6,57 +6,46 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primary,
+      backgroundColor: const Color(0xFFF5F7FA), // Light blue-gray background
       body: SafeArea(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Logo
-              Container(
+              Image.asset(
+                'assets/icons/nairapay.png',
                 width: 120,
                 height: 120,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.account_balance_wallet_rounded,
-                  size: 60,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                fit: BoxFit.cover,
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // App name
               Text(
                 'NairaPay',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: Theme.of(context).colorScheme.primary, // Darker text for contrast
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Tagline
               Text(
                 'Your Digital Payment Solution',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
-                ),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.8), // Darker text for contrast
+                    ),
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               // Loading indicator
               SizedBox(
                 width: 24,
@@ -64,7 +53,7 @@ class SplashScreen extends StatelessWidget {
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).colorScheme.onPrimary,
+                    Theme.of(context).colorScheme.primary, // Darker indicator for contrast
                   ),
                 ),
               ),

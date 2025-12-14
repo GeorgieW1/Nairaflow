@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user.dart';
 import 'api_service.dart';
 import 'storage_service.dart';
@@ -111,34 +113,70 @@ class AuthService {
     }
   }
 
-  // Google Sign-In (simplified for demo)
+  // Google Sign-In
   static Future<User?> signInWithGoogle() async {
     try {
-      // For demo purposes, create a mock Google user
-      final userData = {
-        'name': 'Google User',
-        'email': 'googleuser@gmail.com',
-        'phone': '08012345678',
-        'firebase_uid': 'google_demo_uid',
-      };
+      // 1. Trigger Google Sign In
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+      );
+      
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-      // Send to backend for user creation/sync
-      final response = await ApiService.mockRegister(userData);
+      if (googleUser == null) return null; // User cancelled
 
-      if (response['success'] == true) {
-        // Store JWT token securely
-        await StorageService.storeSecure('jwt_token', response['token']);
+      // 2. Get the authentication details (ID Token)
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+          
+      final fb.AuthCredential credential = fb.GoogleAuthProvider.credential(
+        // accessToken is no longer required for basic auth and caused errors in some versions
+        idToken: googleAuth.idToken,
+        accessToken: null, 
+      );
 
-        // Store user data
-        final userDataResponse = response['user'] as Map<String, dynamic>;
-        await StorageService.storeJson('user_data', userDataResponse);
+      // 3. Sign in to Firebase
+      final fb.UserCredential userCredential =
+          await fb.FirebaseAuth.instance.signInWithCredential(credential);
+      final fb.User? firebaseUser = userCredential.user;
 
-        return User.fromJson(userDataResponse);
+      if (firebaseUser != null) {
+        // 4. Get the ID Token
+        final String? idToken = await firebaseUser.getIdToken();
+
+        if (idToken == null) {
+          throw Exception('Failed to retrieve Google ID Token');
+        }
+
+        // 5. Send Token to Your Backend to Record User
+        final response =
+            await ApiService.firebaseLogin({'idToken': idToken});
+
+        if (response.data['success'] == true) {
+          // Store JWT token securely
+          await StorageService.storeSecure('jwt_token', response.data['token']);
+
+          // Store user data
+          final userData = response.data['user'] as Map<String, dynamic>;
+          await StorageService.storeJson('user_data', userData);
+
+          return User.fromJson(userData);
+        } else {
+          throw Exception(response.data['message'] ?? 'Google Sign-In failed');
+        }
       }
-
       return null;
     } catch (e) {
-      throw Exception('Google sign-in failed: ${e.toString()}');
+      // Handle Google Sign In specific errors if needed
+      if (e.toString().contains('sign_in_failed')) {
+        throw Exception('Google Sign-In failed. Please try again.');
+      }
+      // Clean up error message
+      String message = e.toString();
+      if (message.contains('Exception: ')) {
+        message = message.replaceAll('Exception: ', '');
+      }
+      throw Exception(message);
     }
   }
 

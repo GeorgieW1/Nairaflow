@@ -18,16 +18,16 @@ class MainWrapper extends StatelessWidget {
     final currentLocation = GoRouterState.of(context).matchedLocation;
     
     int currentIndex = 0;
-    switch (currentLocation) {
-      case '/dashboard':
-        currentIndex = 0;
-        break;
-      case '/transactions':
-        currentIndex = 1;
-        break;
-      case '/profile':
-        currentIndex = 2;
-        break;
+    if (currentLocation == '/dashboard') {
+      currentIndex = 0;
+    } else if (currentLocation == '/cards') {
+      currentIndex = 1;
+    } else if (currentLocation == '/transactions') {
+      currentIndex = 2;
+    } else if (currentLocation == '/rewards') {
+      currentIndex = 3;
+    } else if (currentLocation == '/profile') {
+      currentIndex = 4;
     }
 
     return Container(
@@ -43,9 +43,9 @@ class MainWrapper extends StatelessWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildNavItem(
                 context,
@@ -57,18 +57,34 @@ class MainWrapper extends StatelessWidget {
               ),
               _buildNavItem(
                 context,
+                icon: Icons.credit_card_outlined,
+                selectedIcon: Icons.credit_card,
+                label: 'Card',
+                isSelected: currentIndex == 1,
+                onTap: () => context.go('/cards'),
+              ),
+              _buildNavItem(
+                context,
                 icon: Icons.receipt_long_outlined,
                 selectedIcon: Icons.receipt_long,
                 label: 'History',
-                isSelected: currentIndex == 1,
+                isSelected: currentIndex == 2,
                 onTap: () => context.go('/transactions'),
+              ),
+              _buildNavItem(
+                context,
+                icon: Icons.card_giftcard_outlined,
+                selectedIcon: Icons.card_giftcard,
+                label: 'Reward',
+                isSelected: currentIndex == 3,
+                onTap: () => context.go('/rewards'),
               ),
               _buildNavItem(
                 context,
                 icon: Icons.person_outline,
                 selectedIcon: Icons.person,
                 label: 'Profile',
-                isSelected: currentIndex == 2,
+                isSelected: currentIndex == 4,
                 onTap: () => context.go('/profile'),
               ),
             ],
@@ -88,36 +104,29 @@ class MainWrapper extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Theme.of(context).colorScheme.primaryContainer
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? selectedIcon : icon,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isSelected ? selectedIcon : icon,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            size: 24,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: isSelected
                   ? Theme.of(context).colorScheme.primary
                   : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-              size: 20,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              fontSize: 10,
             ),
-            if (isSelected) ...[
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

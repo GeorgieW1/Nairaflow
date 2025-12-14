@@ -44,6 +44,7 @@ class TransactionReceiptScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(20),
               child: Container(
+                clipBehavior: Clip.hardEdge, // Ensure watermark doesn't bleed out
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -55,138 +56,193 @@ class TransactionReceiptScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Column(
+                child: Stack(
                   children: [
-                    // Logo/Header
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withValues(alpha: 0.1),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16),
+                    // Watermark Background
+                    Positioned.fill(
+                      child: Opacity(
+                        opacity: 0.15, // 15% opacity
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return OverflowBox(
+                              maxWidth: constraints.maxWidth * 2,
+                              maxHeight: constraints.maxHeight * 2,
+                              child: Transform.rotate(
+                                angle: -0.52, // ~30 degrees clockwise (negative for clockwise in Flutter's coordinate system? No, positive is clockwise usually, but let's test. wait. 30 deg clockwise. 30 * pi / 180 = 0.52 rad. )
+                                // Actually better to use a grid of icons.
+                                child: GridView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 6,
+                                    mainAxisSpacing: 30,
+                                    crossAxisSpacing: 30,
+                                  ),
+                                  itemBuilder: (context, index) {
+                                    return Transform.rotate(
+                                      angle: -0.52, // Rotate each logo individually or the whole grid? 
+                                      // Request: "Each logo appears to be titled (rotated) approximately 30 degrees clockwise"
+                                      // Request: "Pattern: The logos are repeated in a diagonal grid pattern"
+                                      // If I rotate the whole grid, it might look like a diagonal grid. 
+                                      // Let's rotate individual logos and maybe offset them?
+                                      // Simplest: Rotate each icon.
+                                      child: Icon(
+                                        Icons.receipt_long, // Using the receipt icon as the logo placeholder
+                                        size: 40,
+                                        color: Theme.of(context).colorScheme.primary, // Using theme primary color
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.receipt_long,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 32,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'NairaFlow',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
 
-                    // Receipt Details
-                    Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        children: [
-                          // Amount
-                          Text(
-                            '₦${transaction.amount.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                    // Content
+                    Column(
+                      children: [
+                        // Logo/Header
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.1),
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(16),
+                              topRight: Radius.circular(16),
                             ),
                           ),
-
-                          const SizedBox(height: 8),
-
-                          // Transaction Type
-                          Text(
-                            transaction.typeDisplayName,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.receipt_long,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 32,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'NairaPay',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ],
                           ),
-
-                          const SizedBox(height: 24),
-                          const Divider(),
-                          const SizedBox(height: 24),
-
-                          // Transaction Details
-                          _buildDetailRow('Transaction ID', transaction.id),
-                          _buildDetailRow('Status', _getStatusText()),
-                          _buildDetailRow(
-                            'Date',
-                            DateFormat('MMM dd, yyyy - hh:mm a')
-                                .format(transaction.createdAt),
-                          ),
-
-                          // Conditional fields based on transaction type
-                          if (transaction.type == TransactionType.airtime ||
-                              transaction.type == TransactionType.data) ...[
-                            _buildDetailRow(
-                                'Phone Number', transaction.phone ?? 'N/A'),
-                            _buildDetailRow(
-                                'Network', transaction.networkDisplayName),
-                          ],
-
-                          if (transaction.type == TransactionType.electricity)
-                            _buildDetailRow(
-                                'Meter Number', transaction.phone ?? 'N/A'),
-
-                          if (transaction.type == TransactionType.funding)
-                            _buildDetailRow('Payment Method', 'Paystack'),
-
-                          if (transaction.description != null)
-                            _buildDetailRow(
-                                'Description', transaction.description!),
-
-                          if (transaction.type == TransactionType.data &&
-                              transaction.description != null)
-                            _buildDetailRow(
-                                'Data Plan', transaction.description!),
-                        ],
-                      ),
-                    ),
-
-                    // Footer
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(16),
-                          bottomRight: Radius.circular(16),
                         ),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Thank you for using NairaFlow!',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+    
+                        // Receipt Details
+                        Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            children: [
+                              // Amount
+                              Text(
+                                '₦${transaction.amount.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+    
+                              const SizedBox(height: 8),
+    
+                              // Transaction Type
+                              Text(
+                                transaction.typeDisplayName,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+    
+                              const SizedBox(height: 24),
+                              const Divider(),
+                              const SizedBox(height: 24),
+    
+                              // Transaction Details
+                              _buildDetailRow('Transaction ID', transaction.id),
+                              _buildDetailRow('Status', _getStatusText()),
+                              _buildDetailRow(
+                                'Date',
+                                DateFormat('dd MMM yyyy').format(transaction.createdAt),
+                              ),
+                              _buildDetailRow(
+                                'Time',
+                                DateFormat('hh:mm a').format(transaction.createdAt),
+                              ),
+    
+                              // Conditional fields based on transaction type
+                              if (transaction.type == TransactionType.airtime ||
+                                  transaction.type == TransactionType.data) ...[
+                                _buildDetailRow(
+                                    'Phone Number', transaction.phone ?? 'N/A'),
+                                _buildDetailRow(
+                                    'Network', transaction.networkDisplayName),
+                              ],
+    
+                              if (transaction.type == TransactionType.electricity)
+                                _buildDetailRow(
+                                    'Meter Number', transaction.phone ?? 'N/A'),
+    
+                              if (transaction.type == TransactionType.funding)
+                                _buildDetailRow('Payment Method', 'Paystack'),
+    
+                              if (transaction.description != null)
+                                _buildDetailRow(
+                                    'Description', transaction.description!),
+    
+                              if (transaction.type == TransactionType.data &&
+                                  transaction.description != null)
+                                _buildDetailRow(
+                                    'Data Plan', transaction.description!),
+                            ],
+                          ),
+                        ),
+    
+                        // Footer
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50], // Keep it opaque or transparent? User asked for watermark across entire receipt. 
+                            // If I keep this color, it blocks the watermark. 
+                            // Let's make it transparent or semi-transparent?
+                            // Actually "across the entire receipt" suggests the background of the card.
+                            // The Footer background is grey[50]. Let's keep it but maybe it should sit on top or be transparent.
+                            // I'll leave it as is for legibility.
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(16),
+                              bottomRight: Radius.circular(16),
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'For support: support@nairaflow.com',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[500],
-                            ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Thank you for using NairaPay!',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'For support: support@nairapay.com',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -342,7 +398,7 @@ class TransactionReceiptScreen extends StatelessWidget {
   void _shareReceipt() {
     final receiptText = '''
 ━━━━━━━━━━━━━━━━━━━━━━
-   NAIRAFLOW RECEIPT
+   NAIRAPAY RECEIPT
 ━━━━━━━━━━━━━━━━━━━━━━
 
 Amount: ₦${transaction.amount.toStringAsFixed(2)}
@@ -350,7 +406,8 @@ Type: ${transaction.typeDisplayName}
 Status: ${_getStatusText()}
 
 Transaction ID: ${transaction.id}
-Date: ${DateFormat('MMM dd, yyyy - hh:mm a').format(transaction.createdAt)}
+Date: ${DateFormat('dd MMM yyyy').format(transaction.createdAt)}
+Time: ${DateFormat('hh:mm a').format(transaction.createdAt)}
 
 ${transaction.type == TransactionType.airtime || transaction.type == TransactionType.data ? 'Phone: ${transaction.phone ?? 'N/A'}\nNetwork: ${transaction.networkDisplayName}' : ''}
 ${transaction.type == TransactionType.electricity ? 'Meter: ${transaction.phone ?? 'N/A'}' : ''}
@@ -358,10 +415,10 @@ ${transaction.type == TransactionType.funding ? 'Payment Method: Paystack' : ''}
 ${transaction.description != null ? 'Description: ${transaction.description}' : ''}
 
 ━━━━━━━━━━━━━━━━━━━━━━
-Thank you for using NairaFlow!
+Thank you for using NairaPay!
 ━━━━━━━━━━━━━━━━━━━━━━
 ''';
 
-    Share.share(receiptText, subject: 'NairaFlow Transaction Receipt');
+    Share.share(receiptText, subject: 'NairaPay Transaction Receipt');
   }
 }

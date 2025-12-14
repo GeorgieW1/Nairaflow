@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "705772017757-keo41ut7bndkfg1qgflrlrfsus39o6dj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nairaflow",
+            "certificate_hash": "3ef48c017402e9d2050ed12694ace9a1363646b7"
+          }
+        },
+        {
           "client_id": "705772017757-3f1rkv648fnk66fqua1glop0fqbq3efi.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "705772017757-3f1rkv648fnk66fqua1glop0fqbq3efi.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "705772017757-a1mfr2a42nq2ifg743etmbt1jgpnbc39.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.CounterApp"
+              }
             }
           ]
         }

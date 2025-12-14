@@ -6,7 +6,8 @@ class ApiService {
   static const String _baseUrl =
       'https://nairapay-backend-production.up.railway.app/api';
 
-  static void initialize() {
+  // Make the initialize method async
+  static Future<void> initialize() async {
     _dio.options.baseUrl = _baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
@@ -76,6 +77,14 @@ class ApiService {
   static Future<Response> login(Map<String, dynamic> data) async {
     try {
       return await _dio.post('/auth/login', data: data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<Response> firebaseLogin(Map<String, dynamic> data) async {
+    try {
+      return await _dio.post('/auth/firebase-login', data: data);
     } catch (e) {
       rethrow;
     }

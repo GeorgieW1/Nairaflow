@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/auth/email_verification_screen.dart';
 import '../screens/home/dashboard_screen.dart';
 import '../screens/home/main_wrapper.dart';
 import '../screens/services/airtime_screen.dart';
@@ -13,7 +14,10 @@ import '../screens/transactions/transaction_history_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/onboarding/splash_screen.dart';
 import '../screens/services/tv_screen.dart';
+
 import '../screens/services/epin_screen.dart';
+import '../screens/wallet/card_screen.dart';
+import '../screens/reward/reward_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -34,18 +38,42 @@ final routerProvider = Provider<GoRouter>((ref) {
       // If loading is done
       if (!isLoading) {
         // If on splash and auth is determined, redirect appropriately
+        // If on splash and auth is determined, redirect appropriately
         if (location == '/splash') {
           return isAuthenticated ? '/dashboard' : '/login';
         }
 
-        // If not authenticated and trying to access protected routes
-        if (!isAuthenticated && !_isPublicRoute(location)) {
-          return '/login';
+        // 1. Not Authenticated
+        if (!isAuthenticated) {
+          if (_isPublicRoute(location)) {
+            return null; // Stay where you are
+          }
+          return '/login'; // Redirect to login
         }
 
-        // If authenticated and trying to access auth routes
-        if (isAuthenticated && _isAuthRoute(location)) {
-          return '/dashboard';
+        // 2. Authenticated
+        if (isAuthenticated) {
+          final user = authState.user;
+          // Check if email is verified
+          if (user != null && !user.isEmailVerified) {
+            // Force redirection to verify-email if not already there
+            if (location != '/verify-email') {
+              return '/verify-email';
+            }
+            return null; // Allow staying on verify-email
+          }
+
+          // If Verified:
+          
+          // If trying to access verify-email while already verified, go to dashboard
+          if (location == '/verify-email') {
+            return '/dashboard';
+          }
+
+          // If on auth routes (login/register) or splash, go to dashboard
+          if (_isAuthRoute(location) || location == '/splash') {
+            return '/dashboard';
+          }
         }
       }
 
@@ -67,6 +95,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
+      // Verify Email is now a protected route (requires auth)
+      GoRoute(
+        path: '/verify-email',
+        builder: (context, state) => const EmailVerificationScreen(),
+      ),
 
       // Main app with bottom navigation
       ShellRoute(
@@ -77,8 +110,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const DashboardScreen(),
           ),
           GoRoute(
+            path: '/cards',
+            builder: (context, state) => const CardScreen(),
+          ),
+          GoRoute(
             path: '/transactions',
             builder: (context, state) => const TransactionHistoryScreen(),
+          ),
+          GoRoute(
+            path: '/rewards',
+            builder: (context, state) => const RewardScreen(),
           ),
           GoRoute(
             path: '/profile',
