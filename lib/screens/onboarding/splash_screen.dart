@@ -5,56 +5,37 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if the system is in dark mode
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA), // Light blue-gray background
+      // Background changes: White for Light Mode, Dark Grey for Dark Mode
+      backgroundColor: isDarkMode ? const Color(0xFF121212) : Colors.white,
       body: SafeArea(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
-              Image.asset(
-                'assets/icons/nairapay.png',
-                width: 120,
-                height: 120,
-                fit: BoxFit.cover,
+              // Centered Logo
+              const Image(
+                image: AssetImage('assets/icons/nairapay.png'),
+                width: 140,
+                height: 140,
+                fit: BoxFit.contain,
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-              // App name
-              Text(
-                'NairaPay',
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.primary, // Darker text for contrast
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Tagline
+              // Tagline color adjusts automatically
               Text(
                 'Your Digital Payment Solution',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.8), // Darker text for contrast
-                    ),
-              ),
-
-              const SizedBox(height: 48),
-
-              // Loading indicator
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).colorScheme.primary, // Darker indicator for contrast
-                  ),
+                style: TextStyle(
+                  color: isDarkMode 
+                      ? Colors.white70 
+                      : Theme.of(context).colorScheme.primary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.5,
                 ),
               ),
             ],

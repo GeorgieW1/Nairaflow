@@ -314,7 +314,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Add your email, get the latest from Nairaflow',
+                              'Add your email, get the latest from Nairapay',
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 12,

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nairaflow_new/models/transaction.dart' as model;
-import 'package:nairaflow_new/providers/auth_provider.dart';
-import 'package:nairaflow_new/providers/transaction_provider.dart';
-import 'package:nairaflow_new/services/epin_service.dart';
-import 'package:nairaflow_new/widgets/custom_button.dart';
-import 'package:nairaflow_new/widgets/custom_text_field.dart';
-import 'package:nairaflow_new/widgets/service_ui_components.dart';
+import 'package:nairapay/models/transaction.dart' as model;
+import 'package:nairapay/providers/auth_provider.dart';
+import 'package:nairapay/providers/transaction_provider.dart';
+import 'package:nairapay/services/epin_service.dart';
+import 'package:nairapay/widgets/custom_button.dart';
+import 'package:nairapay/widgets/custom_text_field.dart';
+import 'package:nairapay/widgets/service_ui_components.dart';
 
 class EpinScreen extends ConsumerStatefulWidget {
   const EpinScreen({super.key});

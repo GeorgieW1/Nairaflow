@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:nairaflow_new/theme.dart';
-import 'package:nairaflow_new/utils/router.dart';
-import 'package:nairaflow_new/services/api_service.dart';
-import 'package:nairaflow_new/services/paystack_service.dart';
-import 'package:nairaflow_new/services/notification_service.dart';
-import 'package:nairaflow_new/providers/theme_provider.dart';
+import 'package:nairapay/theme.dart';
+import 'package:nairapay/utils/router.dart';
+import 'package:nairapay/services/api_service.dart';
+import 'package:nairapay/services/paystack_service.dart';
+import 'package:nairapay/services/notification_service.dart';
+import 'package:nairapay/providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
